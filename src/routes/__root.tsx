@@ -4,10 +4,11 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -91,7 +92,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Caveat:wght@400;500;600&display=swap",
+      },
+      { rel: "icon", href: "/images/uigradients.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
@@ -116,9 +123,33 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleNavigation = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const button = target?.closest("[data-href]") as HTMLElement | null;
+      if (!button) return;
+
+      e.preventDefault();
+      const href = button.getAttribute("data-href")!;
+
+      setIsTransitioning(true);
+      setTimeout(() => {
+        navigate({ to: href });
+        window.scrollTo(0, 0);
+        setTimeout(() => setIsTransitioning(false), 500);
+      }, 500);
+    };
+
+    document.addEventListener("click", handleNavigation);
+    return () => document.removeEventListener("click", handleNavigation);
+  }, [navigate]);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <div className={`page-transition ${isTransitioning ? "active" : ""}`} />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
