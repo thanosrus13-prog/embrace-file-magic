@@ -122,9 +122,33 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleNavigation = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const button = target?.closest("[data-href]") as HTMLElement | null;
+      if (!button) return;
+
+      e.preventDefault();
+      const href = button.getAttribute("data-href")!;
+
+      setIsTransitioning(true);
+      setTimeout(() => {
+        navigate({ to: href });
+        window.scrollTo(0, 0);
+        setTimeout(() => setIsTransitioning(false), 500);
+      }, 500);
+    };
+
+    document.addEventListener("click", handleNavigation);
+    return () => document.removeEventListener("click", handleNavigation);
+  }, [navigate]);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <div className={`page-transition ${isTransitioning ? "active" : ""}`} />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
