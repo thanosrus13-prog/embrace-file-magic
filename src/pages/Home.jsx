@@ -1,8 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from './components/FlipPostcard'
-import './App.css'
 
 function FAQItem({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false)
