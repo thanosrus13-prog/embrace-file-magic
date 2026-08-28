@@ -177,7 +177,7 @@ export default function Auth() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full px-8 py-3 rounded-xl text-lg font-bold text-white cursor-pointer hover-ltr"
+              className="w-full px-8 py-3 rounded-xl text-lg font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] active:opacity-90 disabled:opacity-60 disabled:active:scale-100"
               style={{ backgroundColor: 'black' }}
             >
               <span className="relative z-10">
