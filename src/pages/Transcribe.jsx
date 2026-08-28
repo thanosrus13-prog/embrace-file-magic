@@ -56,6 +56,7 @@ export default function Transcribe() {
   }
 
   const transcribeAudio = async () => {
+    if (!user) { goToAuth(); return }
     if (!audioFile) return
     
     setIsTranscribing(true)
