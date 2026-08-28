@@ -29,6 +29,7 @@ export default function Transcribe() {
   }, [])
 
   const handleFile = (files) => {
+    if (!user) { goToAuth(); return }
     const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/') || f.name.endsWith('.mp3') || f.name.endsWith('.wav') || f.name.endsWith('.m4a'))
     if (audioFiles.length > 0) {
       setAudioFile(audioFiles[0])
