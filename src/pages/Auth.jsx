@@ -154,6 +154,7 @@ export default function Auth() {
         {/* Auth card */}
 
 
+        {!user && (
         <div className="w-full max-w-md mt-6 rounded-2xl p-6" style={{ backgroundColor: '#221416' }}>
           <div className="flex gap-2 mb-6 p-1 rounded-xl" style={{ backgroundColor: 'rgba(15, 15, 15, 0.6)' }}>
             {['signin', 'signup'].map(m => (
