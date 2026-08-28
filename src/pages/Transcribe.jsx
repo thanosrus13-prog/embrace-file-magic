@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSession, signOut } from '@/hooks/useSession'
+import { supabase } from '@/integrations/supabase/client'
 import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
 
 export default function Transcribe() {
@@ -15,6 +16,28 @@ export default function Transcribe() {
   const [mediaRecorder, setMediaRecorder] = useState(null)
   const [recordingMode, setRecordingMode] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [history, setHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const loadHistory = useCallback(async () => {
+    if (!user) { setHistory([]); return }
+    setHistoryLoading(true)
+    const { data, error } = await supabase
+      .from('transcriptions')
+      .select('id, transcription_type, text_content, audio_url, created_at')
+      .order('created_at', { ascending: false })
+    if (error) console.error('Failed to load transcriptions:', error.message)
+    setHistory(error ? [] : (data || []))
+    setHistoryLoading(false)
+  }, [user])
+
+  useEffect(() => { loadHistory() }, [loadHistory])
+
+  const deleteTranscription = async (id) => {
+    const { error } = await supabase.from('transcriptions').delete().eq('id', id)
+    if (error) { console.error('Failed to delete transcription:', error.message); return }
+    setHistory(prev => prev.filter(t => t.id !== id))
+  }
 
   // Track scroll rotation
   useEffect(() => {
