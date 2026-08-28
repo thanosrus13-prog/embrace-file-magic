@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useSession, signOut } from '@/hooks/useSession'
 
 export default function Transcribe() {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useSession()
+  const goToAuth = () => navigate({ to: '/auth', search: { redirect: '/transcribe' } })
   const [scrollRotation, setScrollRotation] = useState(0)
   const [audioFile, setAudioFile] = useState(null)
   const [transcript, setTranscript] = useState('')
