@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useSession, signOut } from '@/hooks/useSession'
-import { supabase } from '@/integrations/supabase/client'
+import { useSession } from '@/hooks/useSession'
 import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
 
 export default function Transcribe() {
@@ -619,82 +618,6 @@ export default function Transcribe() {
   )
 }
 
-function HistoryItem({ item, onDelete }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const date = new Date(item.created_at)
-  const preview = item.text_content.length > 120 ? item.text_content.slice(0, 120) + '…' : item.text_content
-
-  const copy = async (e) => {
-    e.stopPropagation()
-    try {
-      await navigator.clipboard.writeText(item.text_content)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch (err) { console.error(err) }
-  }
-
-  return (
-    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#221416' }}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-4 text-left transition-all duration-200 active:opacity-80"
-      >
-        <span
-          className="shrink-0 px-2 py-1 rounded-md text-xs font-semibold text-white"
-          style={{ background: 'linear-gradient(90deg, #c1336b, #ec5144)' }}
-        >
-          {item.transcription_type === 'live' ? '🎙️ Live' : '📁 File'}
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-300 truncate">{preview}</p>
-          <p className="text-xs mt-1" style={{ color: '#c0bec6' }}>
-            {date.toLocaleDateString()} · {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </p>
-        </div>
-        <span className="text-white text-xl font-bold w-6 text-center shrink-0">{isOpen ? '−' : '+'}</span>
-      </button>
-      <div
-        className="grid transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={{ gridTemplateRows: isOpen ? '1fr' : '0fr', opacity: isOpen ? 1 : 0 }}
-      >
-        <div className="overflow-hidden">
-          <div className="px-4 pb-4 pt-1">
-            <p className="text-sm text-gray-300 whitespace-pre-wrap mb-4">{item.text_content}</p>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={copy}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-all duration-200 active:scale-95"
-                style={{ backgroundColor: 'black' }}
-              >
-                {copied ? 'Copied!' : 'Copy text'}
-              </button>
-              {item.audio_url && (
-                <a
-                  href={item.audio_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-all duration-200 active:scale-95"
-                  style={{ backgroundColor: 'black' }}
-                >
-                  Play audio
-                </a>
-              )}
-              <button
-                onClick={(e) => { e.stopPropagation(); onDelete() }}
-                className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:text-red-300 transition-all duration-200 active:scale-95"
-                style={{ backgroundColor: 'black' }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function FAQItem({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false)
