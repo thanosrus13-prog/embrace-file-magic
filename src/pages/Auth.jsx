@@ -190,20 +190,6 @@ export default function Auth() {
             <p className="mt-4 text-sm text-center" style={{ color: '#c0bec6' }}>{status}</p>
           )}
 
-          <div className="flex items-center gap-3 my-6">
-            <div className="h-px flex-1" style={{ backgroundColor: '#352f3d' }}></div>
-            <span className="text-xs" style={{ color: '#c0bec6' }}>or continue with</span>
-            <div className="h-px flex-1" style={{ backgroundColor: '#352f3d' }}></div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" className="py-3 rounded-xl text-sm font-medium text-white hover-ltr" style={{ backgroundColor: '#0f0f0f' }}>
-              <span className="relative z-10">Google</span>
-            </button>
-            <button type="button" className="py-3 rounded-xl text-sm font-medium text-white hover-ltr" style={{ backgroundColor: '#0f0f0f' }}>
-              <span className="relative z-10">Apple</span>
-            </button>
-          </div>
 
           <p className="mt-6 text-center text-sm" style={{ color: '#c0bec6' }}>
             {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
