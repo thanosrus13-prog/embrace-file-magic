@@ -495,6 +495,8 @@ export default function Transcribe() {
           />
         </div>
         )}
+        </>
+        )}
 
         {/* Selected file - only show for upload mode */}
         {!recordingMode && audioFile && (
