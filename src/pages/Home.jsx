@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from '../components/FlipPostcard'
+import { useSession, signOut } from '@/hooks/useSession'
 
 function NavButton({ href, children, reload, onClick }) {
   return (
@@ -47,6 +48,7 @@ function FAQItem({ question, answer }) {
 
 function App() {
   const navigate = useNavigate()
+  const { user } = useSession()
   const [images, setImages] = useState([])
   const [rendered, setRendered] = useState([])
   const [dragging, setDragging] = useState(false)
@@ -250,7 +252,11 @@ function App() {
         </button>
         <NavButton href="/transcribe">Transcribe</NavButton>
         <div className="flex-1"></div>
-        <NavButton href="/auth">Sign in / Sign up</NavButton>
+        {user ? (
+          <NavButton onClick={() => signOut()}>Sign out</NavButton>
+        ) : (
+          <NavButton href="/auth">Sign in / Sign up</NavButton>
+        )}
       </div>
       <div className="h-24"></div>
       <div className="w-full flex flex-col items-center px-4 pt-32">
