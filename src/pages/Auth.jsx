@@ -196,7 +196,7 @@ export default function Auth() {
             <button
               type="button"
               onClick={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
-              className="font-semibold"
+              className="font-semibold transition-all duration-200 active:opacity-70"
               style={{ color: '#ec5144' }}
             >
               {mode === 'signin' ? 'Sign up' : 'Sign in'}
