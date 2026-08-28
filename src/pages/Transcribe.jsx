@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSession, signOut } from '@/hooks/useSession'
+import { supabase } from '@/integrations/supabase/client'
 import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
 
 export default function Transcribe() {
@@ -15,6 +16,28 @@ export default function Transcribe() {
   const [mediaRecorder, setMediaRecorder] = useState(null)
   const [recordingMode, setRecordingMode] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [history, setHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const loadHistory = useCallback(async () => {
+    if (!user) { setHistory([]); return }
+    setHistoryLoading(true)
+    const { data, error } = await supabase
+      .from('transcriptions')
+      .select('id, transcription_type, text_content, audio_url, created_at')
+      .order('created_at', { ascending: false })
+    if (error) console.error('Failed to load transcriptions:', error.message)
+    setHistory(error ? [] : (data || []))
+    setHistoryLoading(false)
+  }, [user])
+
+  useEffect(() => { loadHistory() }, [loadHistory])
+
+  const deleteTranscription = async (id) => {
+    const { error } = await supabase.from('transcriptions').delete().eq('id', id)
+    if (error) { console.error('Failed to delete transcription:', error.message); return }
+    setHistory(prev => prev.filter(t => t.id !== id))
+  }
 
   // Track scroll rotation
   useEffect(() => {
@@ -175,7 +198,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText, storedAudioUrl)
+                  saveTranscription('uploaded_file', fullText, storedAudioUrl).then(() => loadHistory())
                 }
               }
               showNextWord()
@@ -259,7 +282,7 @@ export default function Transcribe() {
         if (recognition) {
           recognition.stop()
         }
-        saveTranscription('live', finalTranscript)
+        saveTranscription('live', finalTranscript).then(() => loadHistory())
       }
       
       recorder.start()
@@ -575,6 +598,24 @@ export default function Transcribe() {
           </div>
         )}
 
+        {/* Past transcriptions */}
+        {user && (
+          <div className="w-full max-w-2xl mt-32 px-4">
+            <h2 className="text-2xl font-bold text-center text-white mb-8" style={{ fontFamily: 'DM Sans, sans-serif' }}>Your past transcriptions</h2>
+            {historyLoading ? (
+              <p className="text-center text-sm" style={{ color: '#c0bec6' }}>Loading…</p>
+            ) : history.length === 0 ? (
+              <p className="text-center text-sm" style={{ color: '#c0bec6' }}>No saved transcriptions yet. Finish a recording or upload and it will appear here.</p>
+            ) : (
+              <div className="space-y-3">
+                {history.map(item => (
+                  <HistoryItem key={item.id} item={item} onDelete={() => deleteTranscription(item.id)} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* FAQ Section */}
         <div className="w-full max-w-2xl mt-48 mb-12 px-4">
           <h2 className="text-2xl font-bold text-center text-white mb-8">Common Questions</h2>
@@ -591,6 +632,83 @@ export default function Transcribe() {
             ].map((faq, i) => (
               <FAQItem key={i} question={faq.q} answer={faq.a} />
             ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HistoryItem({ item, onDelete }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const date = new Date(item.created_at)
+  const preview = item.text_content.length > 120 ? item.text_content.slice(0, 120) + '…' : item.text_content
+
+  const copy = async (e) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(item.text_content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch (err) { console.error(err) }
+  }
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#221416' }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center gap-3 p-4 text-left transition-all duration-200 active:opacity-80"
+      >
+        <span
+          className="shrink-0 px-2 py-1 rounded-md text-xs font-semibold text-white"
+          style={{ background: 'linear-gradient(90deg, #c1336b, #ec5144)' }}
+        >
+          {item.transcription_type === 'live' ? '🎙️ Live' : '📁 File'}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-gray-300 truncate">{preview}</p>
+          <p className="text-xs mt-1" style={{ color: '#c0bec6' }}>
+            {date.toLocaleDateString()} · {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
+        <span className="text-white text-xl font-bold w-6 text-center shrink-0">{isOpen ? '−' : '+'}</span>
+      </button>
+      <div
+        className="grid transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{ gridTemplateRows: isOpen ? '1fr' : '0fr', opacity: isOpen ? 1 : 0 }}
+      >
+        <div className="overflow-hidden">
+          <div className="px-4 pb-4 pt-1">
+            <p className="text-sm text-gray-300 whitespace-pre-wrap mb-4">{item.text_content}</p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={copy}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-all duration-200 active:scale-95"
+                style={{ backgroundColor: 'black' }}
+              >
+                {copied ? 'Copied!' : 'Copy text'}
+              </button>
+              {item.audio_url && (
+                <a
+                  href={item.audio_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-all duration-200 active:scale-95"
+                  style={{ backgroundColor: 'black' }}
+                >
+                  Play audio
+                </a>
+              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete() }}
+                className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:text-red-300 transition-all duration-200 active:scale-95"
+                style={{ backgroundColor: 'black' }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
