@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useSession, signOut } from '@/hooks/useSession'
 
 export default function Transcribe() {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useSession()
+  const goToAuth = () => navigate({ to: '/auth', search: { redirect: '/transcribe' } })
   const [scrollRotation, setScrollRotation] = useState(0)
   const [audioFile, setAudioFile] = useState(null)
   const [transcript, setTranscript] = useState('')
@@ -26,6 +29,7 @@ export default function Transcribe() {
   }, [])
 
   const handleFile = (files) => {
+    if (!user) { goToAuth(); return }
     const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/') || f.name.endsWith('.mp3') || f.name.endsWith('.wav') || f.name.endsWith('.m4a'))
     if (audioFiles.length > 0) {
       setAudioFile(audioFiles[0])
@@ -52,6 +56,7 @@ export default function Transcribe() {
   }
 
   const transcribeAudio = async () => {
+    if (!user) { goToAuth(); return }
     if (!audioFile) return
     
     setIsTranscribing(true)
@@ -191,6 +196,7 @@ export default function Transcribe() {
   }
   
   const startRecording = async () => {
+    if (!user) { goToAuth(); return }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream)
@@ -280,13 +286,28 @@ export default function Transcribe() {
           <span className="relative z-10">Transcribe</span>
         </button>
         <div className="flex-1"></div>
-        <button
-          data-href="/auth"
-          className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
-          style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
-        >
-          <span className="relative z-10">Sign in / Sign up</span>
-        </button>
+        {user ? (
+          <button
+            onClick={async () => {
+              if (isRecording) stopRecording()
+              await signOut()
+              setAudioFile(null)
+              setTranscript('')
+            }}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+            style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+          >
+            <span className="relative z-10">Sign out</span>
+          </button>
+        ) : (
+          <button
+            data-href="/auth"
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+            style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+          >
+            <span className="relative z-10">Sign in / Sign up</span>
+          </button>
+        )}
       </div>
       <div className="h-24"></div>
 
@@ -390,6 +411,26 @@ export default function Transcribe() {
 
         <h2 className="text-5xl font-bold text-center text-white mt-32 mb-32" style={{ fontFamily: 'DM Sans, sans-serif' }}>Insert audio to begin transcription</h2>
         
+        {!user ? (
+          <div className="w-full max-w-xl rounded-2xl p-8 flex flex-col items-center gap-4 text-center" style={{ backgroundColor: '#221416' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#c0bec6' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <p className="text-white text-lg font-semibold">Sign in to transcribe</p>
+            <p className="text-sm max-w-sm" style={{ color: '#c0bec6' }}>
+              Uploading audio and live recording are available once you have an account. It only takes a moment.
+            </p>
+            <button
+              onClick={goToAuth}
+              disabled={authLoading}
+              className="mt-2 px-8 py-3 rounded-xl text-lg font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] active:opacity-90 disabled:opacity-60"
+              style={{ backgroundColor: 'black' }}
+            >
+              <span className="relative z-10">Sign in / Sign up</span>
+            </button>
+          </div>
+        ) : (
+        <>
         {/* Mode toggle */}
         <div className="flex gap-4 mb-6">
           <button
@@ -476,6 +517,8 @@ export default function Transcribe() {
             onChange={onFileInput}
           />
         </div>
+        )}
+        </>
         )}
 
         {/* Selected file - only show for upload mode */}

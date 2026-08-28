@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { supabase } from '@/integrations/supabase/client'
+import { useSession, signOut } from '@/hooks/useSession'
+
+function safeRedirect(value) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/transcribe'
+  return value
+}
 
 export default function Auth() {
+  const navigate = useNavigate()
+  const { user } = useSession()
   const [scrollRotation, setScrollRotation] = useState(0)
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
@@ -10,6 +20,12 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  const [redirectTo, setRedirectTo] = useState('/transcribe')
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setRedirectTo(safeRedirect(params.get('redirect')))
+  }, [])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -28,7 +44,7 @@ export default function Auth() {
     setStatus('')
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault()
     if (!email || !password) {
       setStatus('Please enter your email and password.')
@@ -40,15 +56,41 @@ export default function Auth() {
     }
     setBusy(true)
     setStatus(mode === 'signin' ? 'Signing you in...' : 'Creating your account...')
-    setTimeout(() => {
+
+    try {
+      if (mode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) {
+          setStatus(error.message)
+          return
+        }
+        navigate({ to: redirectTo })
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin + redirectTo,
+            data: { full_name: name },
+          },
+        })
+        if (error) {
+          setStatus(error.message)
+          return
+        }
+        if (data.session) {
+          navigate({ to: redirectTo })
+        } else {
+          setStatus('Check your email to confirm your account, then sign in.')
+        }
+      }
+    } catch (err) {
+      setStatus(err?.message || 'Something went wrong. Please try again.')
+    } finally {
       setBusy(false)
-      setStatus(
-        mode === 'signin'
-          ? 'Accounts are not connected yet — this is the sign in layout.'
-          : 'Accounts are not connected yet — this is the sign up layout.'
-      )
-    }, 900)
+    }
   }
+
 
   return (
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -71,13 +113,23 @@ export default function Auth() {
           <span className="relative z-10">Transcribe</span>
         </button>
         <div className="flex-1"></div>
-        <button
-          data-href="/auth"
-          className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
-          style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
-        >
-          <span className="relative z-10">Sign in / Sign up</span>
-        </button>
+        {user ? (
+          <button
+            onClick={async () => { await signOut(); setStatus('You have been signed out.') }}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+            style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+          >
+            <span className="relative z-10">Sign out</span>
+          </button>
+        ) : (
+          <button
+            data-href="/auth"
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+            style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+          >
+            <span className="relative z-10">Sign in / Sign up</span>
+          </button>
+        )}
       </div>
       <div className="h-24"></div>
 
@@ -85,8 +137,24 @@ export default function Auth() {
         <h2 className="text-5xl font-bold text-center text-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>Your memories.</h2>
         <h2 className="text-5xl font-bold text-center text-white mb-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>One account.</h2>
 
+        {user && (
+          <div className="w-full max-w-md mt-6 rounded-2xl p-6 text-center" style={{ backgroundColor: '#221416' }}>
+            <p className="text-white font-semibold mb-1">You&apos;re signed in</p>
+            <p className="text-sm mb-5" style={{ color: '#c0bec6' }}>{user.email}</p>
+            <button
+              onClick={() => navigate({ to: '/transcribe' })}
+              className="w-full px-8 py-3 rounded-xl text-lg font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] active:opacity-90"
+              style={{ backgroundColor: 'black' }}
+            >
+              <span className="relative z-10">Go to Transcribe</span>
+            </button>
+          </div>
+        )}
+
         {/* Auth card */}
 
+
+        {!user && (
         <div className="w-full max-w-md mt-6 rounded-2xl p-6" style={{ backgroundColor: '#221416' }}>
           <div className="flex gap-2 mb-6 p-1 rounded-xl" style={{ backgroundColor: 'rgba(15, 15, 15, 0.6)' }}>
             {['signin', 'signup'].map(m => (
@@ -203,6 +271,7 @@ export default function Auth() {
             </button>
           </p>
         </div>
+        )}
 
         {/* FAQ */}
         <div className="w-full max-w-2xl mt-48 mb-12 px-4">
