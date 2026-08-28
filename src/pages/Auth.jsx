@@ -137,7 +137,22 @@ export default function Auth() {
         <h2 className="text-5xl font-bold text-center text-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>Your memories.</h2>
         <h2 className="text-5xl font-bold text-center text-white mb-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>One account.</h2>
 
+        {user && (
+          <div className="w-full max-w-md mt-6 rounded-2xl p-6 text-center" style={{ backgroundColor: '#221416' }}>
+            <p className="text-white font-semibold mb-1">You&apos;re signed in</p>
+            <p className="text-sm mb-5" style={{ color: '#c0bec6' }}>{user.email}</p>
+            <button
+              onClick={() => navigate({ to: '/transcribe' })}
+              className="w-full px-8 py-3 rounded-xl text-lg font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] active:opacity-90"
+              style={{ backgroundColor: 'black' }}
+            >
+              <span className="relative z-10">Go to Transcribe</span>
+            </button>
+          </div>
+        )}
+
         {/* Auth card */}
+
 
         <div className="w-full max-w-md mt-6 rounded-2xl p-6" style={{ backgroundColor: '#221416' }}>
           <div className="flex gap-2 mb-6 p-1 rounded-xl" style={{ backgroundColor: 'rgba(15, 15, 15, 0.6)' }}>
