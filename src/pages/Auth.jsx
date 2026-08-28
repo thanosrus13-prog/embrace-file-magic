@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
-import { useSession, signOut } from '@/hooks/useSession'
+import { useSession } from '@/hooks/useSession'
 
 function safeRedirect(value) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/transcribe'
@@ -115,11 +115,11 @@ export default function Auth() {
         <div className="flex-1"></div>
         {user ? (
           <button
-            onClick={async () => { await signOut(); setStatus('You have been signed out.') }}
+            data-href="/profile"
             className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
             style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
           >
-            <span className="relative z-10">Sign out</span>
+            <span className="relative z-10">My profile</span>
           </button>
         ) : (
           <button
