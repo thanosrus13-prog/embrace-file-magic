@@ -271,6 +271,7 @@ export default function Auth() {
             </button>
           </p>
         </div>
+        )}
 
         {/* FAQ */}
         <div className="w-full max-w-2xl mt-48 mb-12 px-4">
