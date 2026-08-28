@@ -283,13 +283,28 @@ export default function Transcribe() {
           <span className="relative z-10">Transcribe</span>
         </button>
         <div className="flex-1"></div>
-        <button
-          data-href="/auth"
-          className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
-          style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
-        >
-          <span className="relative z-10">Sign in / Sign up</span>
-        </button>
+        {user ? (
+          <button
+            onClick={async () => {
+              if (isRecording) stopRecording()
+              await signOut()
+              setAudioFile(null)
+              setTranscript('')
+            }}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+            style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+          >
+            <span className="relative z-10">Sign out</span>
+          </button>
+        ) : (
+          <button
+            data-href="/auth"
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+            style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+          >
+            <span className="relative z-10">Sign in / Sign up</span>
+          </button>
+        )}
       </div>
       <div className="h-24"></div>
 
