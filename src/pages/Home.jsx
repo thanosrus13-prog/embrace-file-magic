@@ -3,11 +3,12 @@ import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from '../components/FlipPostcard'
 
-function NavButton({ href, children, reload }) {
+function NavButton({ href, children, reload, onClick }) {
   return (
     <button
-      data-href={href}
+      data-href={onClick ? undefined : href}
       data-reload={reload ? '' : undefined}
+      onClick={onClick}
       className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
       style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
     >
