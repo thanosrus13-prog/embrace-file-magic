@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSession, signOut } from '@/hooks/useSession'
-import { saveTranscription } from '../utils/saveTranscription'
+import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
 
 export default function Transcribe() {
   const navigate = useNavigate()
@@ -61,8 +61,18 @@ export default function Transcribe() {
     if (!audioFile) return
     
     setIsTranscribing(true)
+    setTranscript('Saving audio file...')
+
+    let storedAudioUrl = null
+    try {
+      const uploaded = await uploadAudioFile(audioFile)
+      storedAudioUrl = uploaded.url
+    } catch (e) {
+      console.error('Audio storage upload failed:', e)
+    }
+
     setTranscript('Transcribing audio file...')
-    
+
     try {
       // Convert file to base64
       const reader = new FileReader()
@@ -165,7 +175,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText)
+                  saveTranscription('uploaded_file', fullText, storedAudioUrl)
                 }
               }
               showNextWord()
