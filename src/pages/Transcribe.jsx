@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSession, signOut } from '@/hooks/useSession'
+import { saveTranscription } from '../utils/saveTranscription'
 
 export default function Transcribe() {
   const navigate = useNavigate()
@@ -164,6 +165,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
+                  saveTranscription('uploaded_file', fullText)
                 }
               }
               showNextWord()
@@ -205,14 +207,13 @@ export default function Transcribe() {
       // Start speech recognition for real-time transcription
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       let recognition = null
+      let finalTranscript = ''
       
       if (SpeechRecognition) {
         recognition = new SpeechRecognition()
         recognition.continuous = true
         recognition.interimResults = true
         recognition.lang = 'en-US'
-        
-        let finalTranscript = ''
         
         recognition.onresult = (event) => {
           let interim = ''
@@ -248,6 +249,7 @@ export default function Transcribe() {
         if (recognition) {
           recognition.stop()
         }
+        saveTranscription('live', finalTranscript)
       }
       
       recorder.start()
