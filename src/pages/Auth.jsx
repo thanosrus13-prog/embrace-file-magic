@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { supabase } from '@/integrations/supabase/client'
+import { useSession, signOut } from '@/hooks/useSession'
+
+function safeRedirect(value) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/transcribe'
+  return value
+}
 
 export default function Auth() {
+  const navigate = useNavigate()
+  const { user } = useSession()
   const [scrollRotation, setScrollRotation] = useState(0)
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
@@ -10,6 +20,12 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  const [redirectTo, setRedirectTo] = useState('/transcribe')
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setRedirectTo(safeRedirect(params.get('redirect')))
+  }, [])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -28,7 +44,7 @@ export default function Auth() {
     setStatus('')
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault()
     if (!email || !password) {
       setStatus('Please enter your email and password.')
@@ -40,15 +56,41 @@ export default function Auth() {
     }
     setBusy(true)
     setStatus(mode === 'signin' ? 'Signing you in...' : 'Creating your account...')
-    setTimeout(() => {
+
+    try {
+      if (mode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) {
+          setStatus(error.message)
+          return
+        }
+        navigate({ to: redirectTo })
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin + redirectTo,
+            data: { full_name: name },
+          },
+        })
+        if (error) {
+          setStatus(error.message)
+          return
+        }
+        if (data.session) {
+          navigate({ to: redirectTo })
+        } else {
+          setStatus('Check your email to confirm your account, then sign in.')
+        }
+      }
+    } catch (err) {
+      setStatus(err?.message || 'Something went wrong. Please try again.')
+    } finally {
       setBusy(false)
-      setStatus(
-        mode === 'signin'
-          ? 'Accounts are not connected yet — this is the sign in layout.'
-          : 'Accounts are not connected yet — this is the sign up layout.'
-      )
-    }, 900)
+    }
   }
+
 
   return (
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
