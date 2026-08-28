@@ -230,61 +230,84 @@ export default function Transcribe() {
     }
   }
   
+  const stoppingRef = useRef(false)
+  const finalTranscriptRef = useRef('')
+  const recognitionRef = useRef(null)
+  const savedRef = useRef(false)
+
+  const persistLive = useCallback(async () => {
+    if (savedRef.current) return
+    const text = (finalTranscriptRef.current || '').trim()
+    if (!text) {
+      console.warn('Live recording produced no final text — nothing saved.')
+      return
+    }
+    savedRef.current = true
+    const { error } = await saveTranscription('live', text)
+    if (error) {
+      savedRef.current = false
+      console.error('Failed to save live transcription:', error)
+      return
+    }
+    loadHistory()
+  }, [loadHistory])
+
   const startRecording = async () => {
     if (!user) { goToAuth(); return }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream)
-      const chunks = []
-      
+
+      stoppingRef.current = false
+      savedRef.current = false
+      finalTranscriptRef.current = ''
+
       // Start speech recognition for real-time transcription
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       let recognition = null
-      let finalTranscript = ''
-      
+
       if (SpeechRecognition) {
         recognition = new SpeechRecognition()
+        recognitionRef.current = recognition
         recognition.continuous = true
         recognition.interimResults = true
         recognition.lang = 'en-US'
-        
+
         recognition.onresult = (event) => {
           let interim = ''
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const text = event.results[i][0].transcript
             if (event.results[i].isFinal) {
-              finalTranscript += text + ' '
+              finalTranscriptRef.current += text + ' '
             } else {
               interim += text
             }
           }
-          setTranscript((finalTranscript + interim).trim())
+          setTranscript((finalTranscriptRef.current + interim).trim())
         }
-        
+
         recognition.onerror = (e) => {
           console.error('Speech error:', e.error)
         }
-        
+
         recognition.onend = () => {
-          // Restart if still recording
-          if (isRecording && recognition) {
-            try { recognition.start() } catch(e) {}
+          if (!stoppingRef.current) {
+            // Chrome ends recognition periodically — keep it alive while recording
+            try { recognition.start() } catch (e) { /* already started */ }
+            return
           }
+          recognitionRef.current = null
+          persistLive()
         }
-        
+
         recognition.start()
       }
-      
-      recorder.ondataavailable = (e) => chunks.push(e.data)
+
       recorder.onstop = () => {
-        // Don't save the file - we only need the transcript
         stream.getTracks().forEach(t => t.stop())
-        if (recognition) {
-          recognition.stop()
-        }
-        saveTranscription('live', finalTranscript).then(() => loadHistory())
+        if (!recognitionRef.current) persistLive()
       }
-      
+
       recorder.start()
       setMediaRecorder(recorder)
       setIsRecording(true)
@@ -292,13 +315,18 @@ export default function Transcribe() {
       console.error('Recording error:', e)
     }
   }
-  
+
   const stopRecording = () => {
+    stoppingRef.current = true
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop() } catch (e) { /* noop */ }
+    }
     if (mediaRecorder) {
       mediaRecorder.stop()
-      setIsRecording(false)
     }
+    setIsRecording(false)
   }
+
 
   return (
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
