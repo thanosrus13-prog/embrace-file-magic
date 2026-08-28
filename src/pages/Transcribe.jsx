@@ -16,29 +16,6 @@ export default function Transcribe() {
   const [mediaRecorder, setMediaRecorder] = useState(null)
   const [recordingMode, setRecordingMode] = useState(false)
   const [dragActive, setDragActive] = useState(false)
-  const [history, setHistory] = useState([])
-  const [historyLoading, setHistoryLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-
-  const loadHistory = useCallback(async () => {
-    if (!user) { setHistory([]); return }
-    setHistoryLoading(true)
-    const { data, error } = await supabase
-      .from('transcriptions')
-      .select('id, transcription_type, text_content, audio_url, created_at')
-      .order('created_at', { ascending: false })
-    if (error) console.error('Failed to load transcriptions:', error.message)
-    setHistory(error ? [] : (data || []))
-    setHistoryLoading(false)
-  }, [user])
-
-  useEffect(() => { loadHistory() }, [loadHistory])
-
-  const deleteTranscription = async (id) => {
-    const { error } = await supabase.from('transcriptions').delete().eq('id', id)
-    if (error) { console.error('Failed to delete transcription:', error.message); return }
-    setHistory(prev => prev.filter(t => t.id !== id))
-  }
 
   // Track scroll rotation
   useEffect(() => {
@@ -199,7 +176,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText, storedAudioUrl).then(() => loadHistory())
+                  saveTranscription('uploaded_file', fullText, storedAudioUrl)
                 }
               }
               showNextWord()
