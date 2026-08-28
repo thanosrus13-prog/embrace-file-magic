@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from '../components/FlipPostcard'
-import { useSession, signOut } from '@/hooks/useSession'
+import { useSession } from '@/hooks/useSession'
 
 function NavButton({ href, children, reload, onClick }) {
   return (
@@ -253,7 +253,7 @@ function App() {
         <NavButton href="/transcribe">Transcribe</NavButton>
         <div className="flex-1"></div>
         {user ? (
-          <NavButton onClick={() => signOut()}>Sign out</NavButton>
+          <NavButton href="/profile">My profile</NavButton>
         ) : (
           <NavButton href="/auth">Sign in / Sign up</NavButton>
         )}
