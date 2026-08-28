@@ -196,6 +196,7 @@ export default function Transcribe() {
   }
   
   const startRecording = async () => {
+    if (!user) { goToAuth(); return }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream)
