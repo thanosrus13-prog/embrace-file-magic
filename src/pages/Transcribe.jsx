@@ -198,7 +198,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText, storedAudioUrl)
+                  saveTranscription('uploaded_file', fullText, storedAudioUrl).then(() => loadHistory())
                 }
               }
               showNextWord()
@@ -282,7 +282,7 @@ export default function Transcribe() {
         if (recognition) {
           recognition.stop()
         }
-        saveTranscription('live', finalTranscript)
+        saveTranscription('live', finalTranscript).then(() => loadHistory())
       }
       
       recorder.start()
