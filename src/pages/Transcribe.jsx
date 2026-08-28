@@ -18,6 +18,7 @@ export default function Transcribe() {
   const [dragActive, setDragActive] = useState(false)
   const [history, setHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const loadHistory = useCallback(async () => {
     if (!user) { setHistory([]); return }
