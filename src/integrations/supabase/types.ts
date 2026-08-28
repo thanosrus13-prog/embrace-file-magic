@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       transcriptions: {
         Row: {
+          audio_url: string | null
           created_at: string
           id: string
           text_content: string
@@ -23,6 +24,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audio_url?: string | null
           created_at?: string
           id?: string
           text_content: string
@@ -30,6 +32,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audio_url?: string | null
           created_at?: string
           id?: string
           text_content?: string
