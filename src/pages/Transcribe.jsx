@@ -225,10 +225,8 @@ export default function Transcribe() {
     if (error) {
       savedRef.current = false
       console.error('Failed to save live transcription:', error)
-      return
     }
-    loadHistory()
-  }, [loadHistory])
+  }, [])
 
   const startRecording = async () => {
     if (!user) { goToAuth(); return }
@@ -305,18 +303,14 @@ export default function Transcribe() {
     setIsRecording(false)
   }
 
-  const filteredHistory = history.filter(item =>
-    item.text_content.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  )
-
   return (
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       {/* Navbar */}
       <div className="fixed top-4 left-4 right-4 z-50 bg-[#0f0f0f]/35 backdrop-blur-md px-5 py-3 flex items-center gap-3 rounded-xl shadow-lg border border-[#352f3d]/50">
         <button data-href="/" data-reload className="flex items-center gap-4 hover:scale-105 active:scale-95 transition-transform duration-200">
-          <img 
-            src="/images/uigradients.png" 
-            alt="Logo" 
+          <img
+            src="/images/uigradients.png"
+            alt="Logo"
             className="h-12 w-auto"
             style={{ transform: `rotate(${scrollRotation}deg)` }}
           />
@@ -332,16 +326,11 @@ export default function Transcribe() {
         <div className="flex-1"></div>
         {user ? (
           <button
-            onClick={async () => {
-              if (isRecording) stopRecording()
-              await signOut()
-              setAudioFile(null)
-              setTranscript('')
-            }}
+            data-href="/profile"
             className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
             style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
           >
-            <span className="relative z-10">Sign out</span>
+            <span className="relative z-10">My profile</span>
           </button>
         ) : (
           <button
