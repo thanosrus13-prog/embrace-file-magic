@@ -93,7 +93,7 @@ export default function Auth() {
               <button
                 key={m}
                 onClick={() => switchMode(m)}
-                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 active:opacity-90"
                 style={
                   mode === m
                     ? { background: 'linear-gradient(90deg, #c1336b, #ec5144)', color: '#ffffff' }
