@@ -328,6 +328,9 @@ export default function Transcribe() {
     setIsRecording(false)
   }
 
+  const filteredHistory = history.filter(item =>
+    item.text_content.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  )
 
   return (
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
