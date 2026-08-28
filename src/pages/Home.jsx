@@ -3,6 +3,19 @@ import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from '../components/FlipPostcard'
 
+function NavButton({ href, children, reload }) {
+  return (
+    <button
+      data-href={href}
+      data-reload={reload ? '' : undefined}
+      className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
+      style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
+    >
+      <span className="relative z-10">{children}</span>
+    </button>
+  )
+}
+
 function FAQItem({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false)
 
