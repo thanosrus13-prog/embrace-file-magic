@@ -598,6 +598,24 @@ export default function Transcribe() {
           </div>
         )}
 
+        {/* Past transcriptions */}
+        {user && (
+          <div className="w-full max-w-2xl mt-32 px-4">
+            <h2 className="text-2xl font-bold text-center text-white mb-8" style={{ fontFamily: 'DM Sans, sans-serif' }}>Your past transcriptions</h2>
+            {historyLoading ? (
+              <p className="text-center text-sm" style={{ color: '#c0bec6' }}>Loading…</p>
+            ) : history.length === 0 ? (
+              <p className="text-center text-sm" style={{ color: '#c0bec6' }}>No saved transcriptions yet. Finish a recording or upload and it will appear here.</p>
+            ) : (
+              <div className="space-y-3">
+                {history.map(item => (
+                  <HistoryItem key={item.id} item={item} onDelete={() => deleteTranscription(item.id)} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* FAQ Section */}
         <div className="w-full max-w-2xl mt-48 mb-12 px-4">
           <h2 className="text-2xl font-bold text-center text-white mb-8">Common Questions</h2>
