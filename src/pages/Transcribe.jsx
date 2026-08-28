@@ -263,7 +263,7 @@ export default function Transcribe() {
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       {/* Navbar */}
       <div className="fixed top-4 left-4 right-4 z-50 bg-[#0f0f0f]/35 backdrop-blur-md px-5 py-3 flex items-center gap-3 rounded-xl shadow-lg border border-[#352f3d]/50">
-        <button data-href="/" data-reload className="flex items-center gap-4 hover:scale-105 transition-transform">
+        <button data-href="/" data-reload className="flex items-center gap-4 hover:scale-105 active:scale-95 transition-transform duration-200">
           <img 
             src="/images/uigradients.png" 
             alt="Logo" 
@@ -272,9 +272,9 @@ export default function Transcribe() {
           />
           <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'DM Sans, sans-serif', background: 'linear-gradient(90deg, #c1336b, #ec5144)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>VibePost</h1>
         </button>
-        <button 
+        <button
           data-href="/transcribe"
-          className="ml-4 px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr"
+          className="ml-4 px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
           style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
         >
           <span className="relative z-10">Transcribe</span>
@@ -282,12 +282,11 @@ export default function Transcribe() {
         <div className="flex-1"></div>
         <button
           data-href="/auth"
-          className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr"
+          className="px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
           style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
         >
           <span className="relative z-10">Sign in / Sign up</span>
         </button>
-
       </div>
       <div className="h-24"></div>
 
