@@ -19,6 +19,7 @@ export type Database = {
           audio_url: string | null
           created_at: string
           id: string
+          storage_path: string | null
           text_content: string
           transcription_type: string
           user_id: string
@@ -27,6 +28,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string
           id?: string
+          storage_path?: string | null
           text_content: string
           transcription_type: string
           user_id: string
@@ -35,6 +37,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string
           id?: string
+          storage_path?: string | null
           text_content?: string
           transcription_type?: string
           user_id?: string

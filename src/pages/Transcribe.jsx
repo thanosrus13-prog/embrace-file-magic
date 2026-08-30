@@ -64,9 +64,11 @@ export default function Transcribe() {
     setTranscript('Saving audio file...')
 
     let storedAudioUrl = null
+    let storedAudioPath = null
     try {
       const uploaded = await uploadAudioFile(audioFile)
       storedAudioUrl = uploaded.url
+      storedAudioPath = uploaded.path
     } catch (e) {
       console.error('Audio storage upload failed:', e)
     }
@@ -175,7 +177,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText, storedAudioUrl)
+                  saveTranscription('uploaded_file', fullText, storedAudioUrl, storedAudioPath)
                 }
               }
               showNextWord()
