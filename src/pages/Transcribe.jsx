@@ -177,7 +177,7 @@ export default function Transcribe() {
                 } else {
                   setTranscript(fullText)
                   setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText, storedAudioUrl)
+                  saveTranscription('uploaded_file', fullText, storedAudioUrl, storedAudioPath)
                 }
               }
               showNextWord()
