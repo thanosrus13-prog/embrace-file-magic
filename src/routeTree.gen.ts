@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
+import { Route as ApiTranscriptionsIndexRouteImport } from './routes/api/transcriptions/index'
+import { Route as ApiTranscriptionsIdRouteImport } from './routes/api/transcriptions/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +36,32 @@ const TranscribeRoute = TranscribeRouteImport.update({
   path: '/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTranscriptionsIndexRoute = ApiTranscriptionsIndexRouteImport.update({
+  id: '/api/transcriptions/',
+  path: '/api/transcriptions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscriptionsIdRoute = ApiTranscriptionsIdRouteImport.update({
+  id: '/api/transcriptions/$id',
+  path: '/api/transcriptions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
+  '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
+  '/api/transcriptions': typeof ApiTranscriptionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +69,34 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
+  '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/profile' | '/transcribe'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/transcribe'
+    | '/api/transcriptions/$id'
+    | '/api/transcriptions/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/profile' | '/transcribe'
-  id: '__root__' | '/' | '/auth' | '/profile' | '/transcribe'
+  to:
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/transcribe'
+    | '/api/transcriptions/$id'
+    | '/api/transcriptions'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/transcribe'
+    | '/api/transcriptions/$id'
+    | '/api/transcriptions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +104,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ProfileRoute: typeof ProfileRoute
   TranscribeRoute: typeof TranscribeRoute
+  ApiTranscriptionsIdRoute: typeof ApiTranscriptionsIdRoute
+  ApiTranscriptionsIndexRoute: typeof ApiTranscriptionsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +138,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/transcriptions/': {
+      id: '/api/transcriptions/'
+      path: '/api/transcriptions'
+      fullPath: '/api/transcriptions/'
+      preLoaderRoute: typeof ApiTranscriptionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcriptions/$id': {
+      id: '/api/transcriptions/$id'
+      path: '/api/transcriptions/$id'
+      fullPath: '/api/transcriptions/$id'
+      preLoaderRoute: typeof ApiTranscriptionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ProfileRoute: ProfileRoute,
   TranscribeRoute: TranscribeRoute,
+  ApiTranscriptionsIdRoute: ApiTranscriptionsIdRoute,
+  ApiTranscriptionsIndexRoute: ApiTranscriptionsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
