@@ -189,7 +189,7 @@ export default function Auth() {
                 onClick={() => switchMode(m)}
                 className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 active:opacity-90"
                 style={
-                  mode === m
+                  mode === m || (mode === 'reset' && m === 'signin')
                     ? { background: 'linear-gradient(90deg, #c1336b, #ec5144)', color: '#ffffff' }
                     : { color: '#c0bec6' }
                 }
