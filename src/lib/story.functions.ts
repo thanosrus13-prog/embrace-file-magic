@@ -80,7 +80,8 @@ export const generateStory = createServerFn({ method: 'POST' })
 
       const match = raw.match(/PLACE:\s*(.+)\s*$/i)
       const city = match?.[1]?.trim() || 'Unknown'
-      const narrative = raw.replace(/PLACE:\s*.+\s*$/i, '').trim()
+      let narrative = raw.replace(/PLACE:\s*.+\s*$/i, '').trim()
+      if (narrative.length > 240) narrative = narrative.slice(0, 237) + '...'
 
       return { narrative, city: city || 'Unknown', error: null }
     } catch (err) {
