@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicTranscriptionWebhookRouteImport } from './routes/api/public/transcription-webhook'
@@ -39,6 +40,11 @@ const AuthRoute = AuthRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TranscribeRoute = TranscribeRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/profile'
+    | '/reset-password'
     | '/transcribe'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/profile'
+    | '/reset-password'
     | '/transcribe'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/profile'
+    | '/reset-password'
     | '/transcribe'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
   ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TranscribeRoute: typeof TranscribeRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
   ApiPublicTranscriptionWebhookRoute: typeof ApiPublicTranscriptionWebhookRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/transcribe': {
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
   ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TranscribeRoute: TranscribeRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
   ApiPublicTranscriptionWebhookRoute: ApiPublicTranscriptionWebhookRoute,

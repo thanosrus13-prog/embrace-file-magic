@@ -46,6 +46,31 @@ export default function Auth() {
 
   const onSubmit = async (e) => {
     e.preventDefault()
+
+    if (mode === 'reset') {
+      if (!email) {
+        setStatus('Please enter your email address.')
+        return
+      }
+      setBusy(true)
+      setStatus('Sending your reset link...')
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+        if (error) {
+          setStatus(error.message)
+          return
+        }
+        setStatus('If that email has an account, a reset link is on its way. Check your inbox.')
+      } catch (err) {
+        setStatus(err?.message || 'Something went wrong. Please try again.')
+      } finally {
+        setBusy(false)
+      }
+      return
+    }
+
     if (!email || !password) {
       setStatus('Please enter your email and password.')
       return
@@ -56,6 +81,7 @@ export default function Auth() {
     }
     setBusy(true)
     setStatus(mode === 'signin' ? 'Signing you in...' : 'Creating your account...')
+
 
     try {
       if (mode === 'signin') {
@@ -163,7 +189,7 @@ export default function Auth() {
                 onClick={() => switchMode(m)}
                 className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 active:opacity-90"
                 style={
-                  mode === m
+                  mode === m || (mode === 'reset' && m === 'signin')
                     ? { background: 'linear-gradient(90deg, #c1336b, #ec5144)', color: '#ffffff' }
                     : { color: '#c0bec6' }
                 }
@@ -200,6 +226,7 @@ export default function Auth() {
               />
             </label>
 
+            {mode !== 'reset' && (
             <label className="flex flex-col gap-2">
               <span className="text-xs uppercase tracking-wide" style={{ color: '#c0bec6' }}>Password</span>
               <div className="relative">
@@ -221,6 +248,7 @@ export default function Auth() {
                 </button>
               </div>
             </label>
+            )}
 
             {mode === 'signup' && (
               <label className="flex flex-col gap-2">
@@ -236,9 +264,16 @@ export default function Auth() {
               </label>
             )}
 
-            {mode === 'signin' && (
+            {mode !== 'signup' && (
               <div className="flex justify-end">
-                <button type="button" className="text-xs" style={{ color: '#c0bec6' }}>Forgot password?</button>
+                <button
+                  type="button"
+                  onClick={() => switchMode(mode === 'reset' ? 'signin' : 'reset')}
+                  className="text-xs transition-all duration-200 active:opacity-70"
+                  style={{ color: '#c0bec6' }}
+                >
+                  {mode === 'reset' ? 'Back to sign in' : 'Forgot password?'}
+                </button>
               </div>
             )}
 
@@ -249,9 +284,10 @@ export default function Auth() {
               style={{ backgroundColor: 'black' }}
             >
               <span className="relative z-10">
-                {busy ? 'Please wait...' : mode === 'signin' ? 'Sign in' : 'Create account'}
+                {busy ? 'Please wait...' : mode === 'signin' ? 'Sign in' : mode === 'reset' ? 'Send reset link' : 'Create account'}
               </span>
             </button>
+
           </form>
 
           {status && (
