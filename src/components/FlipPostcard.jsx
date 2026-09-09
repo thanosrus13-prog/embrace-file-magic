@@ -552,6 +552,31 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
           <div style={{ height: '2px', background: 'rgba(255,255,255,0.5)' }} />
         </div>
       </div>
+      </div>
+
+      {/* Bottom buttons */}
+      <div style={{ display: 'flex', gap: '12px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); playAudio() }}
+          disabled={isRegenerating || isLoadingAudio}
+          className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
+          style={{ backgroundColor: isPlaying ? '#b45309' : '#7c3aed' }}
+        >
+          {isPlaying ? 'Stop' : 'Listen'}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDownload()
+          }}
+          disabled={isDownloading}
+          className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
+          style={{ backgroundColor: isDownloading ? '#047857' : '#059669' }}
+        >
+          {isDownloading ? 'Generating...' : 'Download Memoir'}
+        </button>
+      </div>
     </div>
   )
 
