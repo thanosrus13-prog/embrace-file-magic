@@ -53,6 +53,8 @@ function App() {
   const [rendered, setRendered] = useState([])
   const [dragging, setDragging] = useState(false)
   const [scrollRotation, setScrollRotation] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [storyError, setStoryError] = useState('')
   const inputRef = useRef(null)
 
   // Track scroll rotation (throttled)
