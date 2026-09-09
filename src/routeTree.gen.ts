@@ -10,15 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiDocsRouteImport } from './routes/api-docs'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
+import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiTranscriptionsIndexRouteImport } from './routes/api/transcriptions/index'
 import { Route as ApiTranscriptionsIdRouteImport } from './routes/api/transcriptions/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocsRoute = ApiDocsRouteImport.update({
+  id: '/api-docs',
+  path: '/api-docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -36,6 +43,11 @@ const TranscribeRoute = TranscribeRouteImport.update({
   path: '/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
+  id: '/api/public/openapi.json',
+  path: '/api/public/openapi.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTranscriptionsIndexRoute = ApiTranscriptionsIndexRouteImport.update({
   id: '/api/transcriptions/',
   path: '/api/transcriptions/',
@@ -49,26 +61,32 @@ const ApiTranscriptionsIdRoute = ApiTranscriptionsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions': typeof ApiTranscriptionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
 }
@@ -76,34 +94,42 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/api-docs'
     | '/auth'
     | '/profile'
     | '/transcribe'
+    | '/api/public/openapi.json'
     | '/api/transcriptions/$id'
     | '/api/transcriptions/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api-docs'
     | '/auth'
     | '/profile'
     | '/transcribe'
+    | '/api/public/openapi.json'
     | '/api/transcriptions/$id'
     | '/api/transcriptions'
   id:
     | '__root__'
     | '/'
+    | '/api-docs'
     | '/auth'
     | '/profile'
     | '/transcribe'
+    | '/api/public/openapi.json'
     | '/api/transcriptions/$id'
     | '/api/transcriptions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
   ProfileRoute: typeof ProfileRoute
   TranscribeRoute: typeof TranscribeRoute
+  ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
   ApiTranscriptionsIdRoute: typeof ApiTranscriptionsIdRoute
   ApiTranscriptionsIndexRoute: typeof ApiTranscriptionsIndexRoute
 }
@@ -115,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-docs': {
+      id: '/api-docs'
+      path: '/api-docs'
+      fullPath: '/api-docs'
+      preLoaderRoute: typeof ApiDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -138,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/openapi.json': {
+      id: '/api/public/openapi.json'
+      path: '/api/public/openapi.json'
+      fullPath: '/api/public/openapi.json'
+      preLoaderRoute: typeof ApiPublicOpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/transcriptions/': {
       id: '/api/transcriptions/'
       path: '/api/transcriptions'
@@ -157,9 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
   ProfileRoute: ProfileRoute,
   TranscribeRoute: TranscribeRoute,
+  ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
   ApiTranscriptionsIdRoute: ApiTranscriptionsIdRoute,
   ApiTranscriptionsIndexRoute: ApiTranscriptionsIndexRoute,
 }
