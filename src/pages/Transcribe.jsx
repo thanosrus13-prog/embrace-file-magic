@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useSession } from '@/hooks/useSession'
 import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
 import { createTranscriptionJob, getTranscriptionJob } from '@/lib/transcription-jobs.functions'
+import { clearCachedHistory } from '@/lib/history-cache'
 
 export default function Transcribe() {
   const navigate = useNavigate()
@@ -116,6 +117,7 @@ export default function Transcribe() {
 
         if (result.status === 'completed') {
           // The job already saved the transcript server-side.
+          clearCachedHistory()
           const fullText = result.text || 'No speech detected'
           const words = fullText.split(' ')
           let currentIndex = 0
@@ -162,6 +164,7 @@ export default function Transcribe() {
     }
     savedRef.current = true
     const { error } = await saveTranscription('live', text)
+    clearCachedHistory()
     if (error) {
       savedRef.current = false
       console.error('Failed to save live transcription:', error)

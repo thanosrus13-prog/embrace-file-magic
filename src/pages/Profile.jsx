@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { useSession, signOut } from '@/hooks/useSession'
+import { getCachedHistory, setCachedHistory, clearCachedHistory } from '@/lib/history-cache'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -18,8 +19,12 @@ export default function Profile() {
     }
   }, [authLoading, user, navigate])
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async ({ force = false } = {}) => {
     if (!user) { setHistory([]); return }
+    if (!force) {
+      const cachedHistory = getCachedHistory(user.id)
+      if (cachedHistory) { setHistory(cachedHistory); return }
+    }
     setHistoryLoading(true)
     const { data, error } = await supabase
       .from('transcriptions')
@@ -27,7 +32,9 @@ export default function Profile() {
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (error) console.error('Failed to load transcriptions:', error.message)
-    setHistory(error ? [] : (data || []))
+    const rows = error ? [] : (data || [])
+    if (!error) setCachedHistory(user.id, rows)
+    setHistory(rows)
     setHistoryLoading(false)
   }, [user])
 
@@ -46,7 +53,12 @@ export default function Profile() {
       const { error: storageError } = await supabase.storage.from('audio_files').remove([item.storage_path])
       if (storageError) console.error('Failed to delete audio file:', storageError.message)
     }
-    setHistory(prev => prev.filter(t => t.id !== id))
+    clearCachedHistory(user?.id)
+    setHistory(prev => {
+      const next = prev.filter(t => t.id !== id)
+      if (user?.id) setCachedHistory(user.id, next)
+      return next
+    })
   }
 
   // Track scroll rotation

@@ -17,6 +17,10 @@ export const createTranscriptionJob = createServerFn({ method: 'POST' })
     return { audioUrl, storagePath: input?.storagePath ?? null }
   })
   .handler(async ({ data, context }) => {
+    const { assertRateLimit } = await import('./rate-limit.server')
+    // 10 uploads per 5 minutes per user.
+    assertRateLimit(`jobs:create:${context.userId}`, 10, 5 * 60_000)
+
     const { createJob } = await import('./transcription-jobs.server')
     return createJob({
       supabase: context.supabase,
@@ -37,6 +41,9 @@ export const getTranscriptionJob = createServerFn({ method: 'POST' })
     return { jobId }
   })
   .handler(async ({ data, context }) => {
+    const { assertRateLimit } = await import('./rate-limit.server')
+    assertRateLimit(`jobs:poll:${context.userId}`, 240, 60_000)
+
     const { getJob } = await import('./transcription-jobs.server')
     const job = await getJob({ supabase: context.supabase, userId: context.userId, jobId: data.jobId })
     if (!job) return { id: data.jobId, status: 'failed' as const, text: null, error: 'Job not found', transcription_id: null, created_at: null, completed_at: null }
