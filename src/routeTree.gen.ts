@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
+import { Route as ApiPublicTranscriptionWebhookRouteImport } from './routes/api/public/transcription-webhook'
 import { Route as ApiTranscriptionsIndexRouteImport } from './routes/api/transcriptions/index'
 import { Route as ApiTranscriptionsIdRouteImport } from './routes/api/transcriptions/$id'
 
@@ -48,6 +49,12 @@ const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
   path: '/api/public/openapi.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTranscriptionWebhookRoute =
+  ApiPublicTranscriptionWebhookRouteImport.update({
+    id: '/api/public/transcription-webhook',
+    path: '/api/public/transcription-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiTranscriptionsIndexRoute = ApiTranscriptionsIndexRouteImport.update({
   id: '/api/transcriptions/',
   path: '/api/transcriptions/',
@@ -66,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
 }
@@ -76,6 +84,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions': typeof ApiTranscriptionsIndexRoute
 }
@@ -87,6 +96,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
 }
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transcribe'
     | '/api/public/openapi.json'
+    | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
     | '/api/transcriptions/'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transcribe'
     | '/api/public/openapi.json'
+    | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
     | '/api/transcriptions'
   id:
@@ -119,6 +131,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transcribe'
     | '/api/public/openapi.json'
+    | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
     | '/api/transcriptions/'
   fileRoutesById: FileRoutesById
@@ -130,6 +143,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   TranscribeRoute: typeof TranscribeRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
+  ApiPublicTranscriptionWebhookRoute: typeof ApiPublicTranscriptionWebhookRoute
   ApiTranscriptionsIdRoute: typeof ApiTranscriptionsIdRoute
   ApiTranscriptionsIndexRoute: typeof ApiTranscriptionsIndexRoute
 }
@@ -178,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOpenapiDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/transcription-webhook': {
+      id: '/api/public/transcription-webhook'
+      path: '/api/public/transcription-webhook'
+      fullPath: '/api/public/transcription-webhook'
+      preLoaderRoute: typeof ApiPublicTranscriptionWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/transcriptions/': {
       id: '/api/transcriptions/'
       path: '/api/transcriptions'
@@ -202,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   TranscribeRoute: TranscribeRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
+  ApiPublicTranscriptionWebhookRoute: ApiPublicTranscriptionWebhookRoute,
   ApiTranscriptionsIdRoute: ApiTranscriptionsIdRoute,
   ApiTranscriptionsIndexRoute: ApiTranscriptionsIndexRoute,
 }
