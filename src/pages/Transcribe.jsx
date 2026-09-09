@@ -93,7 +93,7 @@ export default function Transcribe() {
         return
       }
 
-      setTranscript('Transcribing... (job ' + job.id.slice(0, 8) + ')')
+      setTranscript('Transcribing... (job ' + job.id + ')')
 
       let attempts = 0
       const checkResult = async () => {
