@@ -1,8 +1,15 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateMemoirPDF } from '../utils/pdfGenerator'
+import { synthesizeSpeech } from '@/lib/tts.functions'
 
-const ELEVENLABS_API_KEY = 'sk_5524bf9007fee37de88e3688670748f596a05939a07bb4d3'
+// Turns base64 audio returned by the server into a playable blob URL.
+function base64ToAudioUrl(base64, mimeType) {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return URL.createObjectURL(new Blob([bytes], { type: mimeType || 'audio/mpeg' }))
+}
 
 const STORY_STYLES = [
   // Cinematic: Adam voice, Stability 0.3, Style 0.6
@@ -107,26 +114,16 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
     console.log('Playing with voice:', currentVoice)
     
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${currentVoice.voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY,
+      const response = await synthesizeSpeech({
+        data: {
+          text,
+          voiceId: currentVoice.voiceId,
+          settings: currentVoice.settings,
         },
-        body: JSON.stringify({
-          text: text,
-          model_id: 'eleven_flash_v2_5',
-          voice_settings: currentVoice.settings,
-        }),
       })
 
-      console.log('ElevenLabs response:', response.status)
-      
-      if (response.ok) {
-        console.log('ElevenLabs audio generated successfully')
-        const audioBlob = await response.blob()
-        console.log('Audio blob size:', audioBlob.size)
-        const audioUrl = URL.createObjectURL(audioBlob)
+      if (response?.audio) {
+        const audioUrl = base64ToAudioUrl(response.audio, response.mimeType)
         const audio = new Audio(audioUrl)
         if (startPosition > 0) {
           audio.currentTime = startPosition
@@ -153,9 +150,7 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
           })
         }
       } else {
-        const errorText = await response.text()
-        console.log('ElevenLabs error:', response.status, errorText)
-        console.log('FALLING BACK to browser TTS')
+        console.log('Voice service unavailable:', response?.error, '- falling back to browser TTS')
         setIsLoadingAudio(false)
         // Fallback to browser TTS with better voice
         speechSynthesis.cancel()
@@ -206,27 +201,13 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
     setShowBubbles(false)
     
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${style.voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY,
-        },
-        body: JSON.stringify({
-          text: newStory,
-          model_id: 'eleven_flash_v2_5',
-          voice_settings: style.settings,
-        }),
+      // Warm the voice for the new style; playback happens when the user hits Listen.
+      await synthesizeSpeech({
+        data: { text: newStory, voiceId: style.voiceId, settings: style.settings },
       })
-
-      if (response.ok) {
-        // Audio generated but not auto-played - user can click Listen to hear it
-        setIsRegenerating(false)
-      } else {
-        setIsRegenerating(false)
-      }
     } catch (err) {
-      console.warn('ElevenLabs failed, using browser TTS')
+      console.warn('Voice preload failed, browser TTS will be used:', err)
+    } finally {
       setIsRegenerating(false)
     }
   }
