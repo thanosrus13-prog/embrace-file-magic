@@ -59,7 +59,7 @@ export default function Transcribe() {
   const transcribeAudio = async () => {
     if (!user) { goToAuth(); return }
     if (!audioFile) return
-    
+
     setIsTranscribing(true)
     setTranscript('Saving audio file...')
 
@@ -73,135 +73,69 @@ export default function Transcribe() {
       console.error('Audio storage upload failed:', e)
     }
 
-    setTranscript('Transcribing audio file...')
+    if (!storedAudioUrl) {
+      setTranscript('Could not store the audio file, so transcription cannot start. Please try again.')
+      setIsTranscribing(false)
+      return
+    }
+
+    setTranscript('Transcribing...')
 
     try {
-      // Convert file to base64
-      const reader = new FileReader()
-      reader.readAsDataURL(audioFile)
-      
-      reader.onload = async () => {
-        const base64Audio = reader.result.split(',')[1]
-        
-        try {
-          // Use AssemblyAI free transcription API
-          // Get free API key from https://www.assemblyai.com/
-          const API_KEY = localStorage.getItem('assemblyai_key')
-          
-          if (!API_KEY) {
-            // Ask user for API key
-            const key = prompt('Enter your AssemblyAI API key (free at https://www.assemblyai.com/):')
-            if (!key) {
-              setTranscript('API key required. Get one free at https://www.assemblyai.com/')
-              setIsTranscribing(false)
-              return
-            }
-            localStorage.setItem('assemblyai_key', key)
-          }
-          
-          setTranscript('Uploading audio...')
-          
-          // Convert base64 to binary
-          const binaryString = atob(base64Audio)
-          const bytes = new Uint8Array(binaryString.length)
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i)
-          }
-          
-          // Upload audio as binary
-          const uploadResponse = await fetch('https://api.assemblyai.com/v2/upload', {
-            method: 'POST',
-            headers: { 
-              'Authorization': localStorage.getItem('assemblyai_key'),
-              'Content-Type': 'application/octet-stream'
-            },
-            body: bytes
-          })
-          
-          const uploadData = await uploadResponse.json()
-          
-          if (!uploadResponse.ok) {
-            setTranscript('Upload failed: ' + (uploadData.error || 'Unknown error'))
-            setIsTranscribing(false)
-            return
-          }
-          
-          if (!uploadData.upload_url) {
-            setTranscript('Upload failed: No URL returned')
-            setIsTranscribing(false)
-            return
-          }
-          
-          setTranscript('Transcribing...')
-          
-          // Start transcription - force English
-          const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
-            method: 'POST',
-            headers: { 
-              'Authorization': localStorage.getItem('assemblyai_key'),
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-              audio_url: uploadData.upload_url,
-              speech_models: ['universal-2'],
-              language_code: 'en'
-            })
-          })
-          
-          const transcriptData = await transcriptResponse.json()
-          
-          if (!transcriptResponse.ok || transcriptData.error) {
-            setTranscript('Transcription failed: ' + (transcriptData.error || 'Unknown error'))
-            setIsTranscribing(false)
-            return
-          }
-          
-          // Poll for result - animate words appearing
-          const checkResult = async () => {
-            const result = await fetch(`https://api.assemblyai.com/v2/transcript/${transcriptData.id}?words=true`, {
-              headers: { 'Authorization': localStorage.getItem('assemblyai_key') }
-            })
-            const resultData = await result.json()
-            
-            if (resultData.status === 'completed') {
-              // Animate words appearing one by one
-              const fullText = resultData.text || 'No speech detected'
-              const words = fullText.split(' ')
-              let currentIndex = 0
-              
-              const showNextWord = () => {
-                if (currentIndex < words.length) {
-                  setTranscript(words.slice(0, currentIndex + 1).join(' ') + ' █')
-                  currentIndex++
-                  setTimeout(showNextWord, 100)
-                } else {
-                  setTranscript(fullText)
-                  setIsTranscribing(false)
-                  saveTranscription('uploaded_file', fullText, storedAudioUrl, storedAudioPath)
-                }
-              }
-              showNextWord()
-            } else if (resultData.status === 'error') {
-              setTranscript('Transcription failed: ' + (resultData.error || 'Unknown'))
-              setIsTranscribing(false)
-            } else {
-              setTranscript('Transcribing...')
-              setTimeout(checkResult, 500)
-            }
-          }
-          
-          checkResult()
-        } catch (apiError) {
-          console.error('API error:', apiError)
-          setTranscript('API error: ' + apiError.message)
+      const started = await startTranscription({ data: { audioUrl: storedAudioUrl } })
+
+      if (!started?.id) {
+        setTranscript(started?.error || 'Could not start transcription.')
+        setIsTranscribing(false)
+        return
+      }
+
+      let attempts = 0
+      const checkResult = async () => {
+        attempts++
+        if (attempts > 600) {
+          setTranscript('Transcription timed out. Please try again.')
           setIsTranscribing(false)
+          return
+        }
+
+        let result
+        try {
+          result = await getTranscriptionStatus({ data: { id: started.id } })
+        } catch (pollError) {
+          console.error('Polling failed:', pollError)
+          setTranscript('Lost connection while transcribing. Please try again.')
+          setIsTranscribing(false)
+          return
+        }
+
+        if (result.status === 'completed') {
+          const fullText = result.text || 'No speech detected'
+          const words = fullText.split(' ')
+          let currentIndex = 0
+
+          const showNextWord = () => {
+            if (currentIndex < words.length) {
+              setTranscript(words.slice(0, currentIndex + 1).join(' ') + ' █')
+              currentIndex++
+              setTimeout(showNextWord, 100)
+            } else {
+              setTranscript(fullText)
+              setIsTranscribing(false)
+              saveTranscription('uploaded_file', fullText, storedAudioUrl, storedAudioPath)
+            }
+          }
+          showNextWord()
+        } else if (result.status === 'error') {
+          setTranscript('Transcription failed: ' + (result.error || 'Unknown'))
+          setIsTranscribing(false)
+        } else {
+          setTranscript('Transcribing...')
+          setTimeout(checkResult, 1000)
         }
       }
-      
-      reader.onerror = () => {
-        setTranscript('Error reading audio file.')
-        setIsTranscribing(false)
-      }
+
+      checkResult()
     } catch (err) {
       console.error('Error:', err)
       setTranscript('Error processing audio.')
