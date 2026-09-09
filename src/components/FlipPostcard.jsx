@@ -48,7 +48,28 @@ const rewriteStory = (originalStory, styleId, city) => {
     // Nat Geo: Sophisticated, scientific observer
     natgeo: `Field observations from ${location}: The subject exhibited signs of profound cultural immersion during the expedition. Notable behavioral patterns include extended periods of contemplation and documented instances of awe. ${originalStory.replace(/^I /, 'The observer ').toLowerCase()} A fascinating specimen of the modern wanderer, adapting to foreign environments with remarkable resilience.`,
   }
-  return stories[styleId] || originalStory
+  return capStoryLength(stories[styleId] || originalStory)
+}
+
+// A story must NEVER exceed 240 characters. Trim to the last complete
+// sentence that fits; if still too long, cut at the last word boundary
+// (never mid-word, never an ellipsis).
+const capStoryLength = (story) => {
+  if (!story || story.length <= 240) return story
+  const withinLimit = story.slice(0, 240)
+  const lastSentenceEnd = Math.max(
+    withinLimit.lastIndexOf('. '),
+    withinLimit.lastIndexOf('! '),
+    withinLimit.lastIndexOf('? ')
+  )
+  let trimmed = lastSentenceEnd > 0 ? withinLimit.slice(0, lastSentenceEnd + 1).trim() : story
+  if (trimmed.length > 240) {
+    const lastSpace = withinLimit.lastIndexOf(' ')
+    trimmed = (lastSpace > 0 ? withinLimit.slice(0, lastSpace) : withinLimit)
+      .replace(/[,.;:!?\s]+$/, '')
+      .trim()
+  }
+  return trimmed
 }
 
 export default function FlipPostcard({ image, narrative: initialNarrative, city = 'Unknown', allImages }) {
