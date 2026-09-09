@@ -22,6 +22,7 @@ export const Route = createFileRoute('/api/transcriptions/')({
           .from('transcriptions')
           .select(SELECT, { count: 'exact' })
           .eq('user_id', auth.userId)
+          .is('deleted_at', null)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1)
 
