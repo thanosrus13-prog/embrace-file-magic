@@ -47,6 +47,65 @@ export type Database = {
         }
         Relationships: []
       }
+      transcription_jobs: {
+        Row: {
+          attempts: number
+          audio_url: string
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          id: string
+          provider: string
+          provider_job_id: string | null
+          status: string
+          storage_path: string | null
+          transcription_id: string | null
+          updated_at: string
+          user_id: string
+          webhook_token: string
+        }
+        Insert: {
+          attempts?: number
+          audio_url: string
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider?: string
+          provider_job_id?: string | null
+          status?: string
+          storage_path?: string | null
+          transcription_id?: string | null
+          updated_at?: string
+          user_id: string
+          webhook_token?: string
+        }
+        Update: {
+          attempts?: number
+          audio_url?: string
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider?: string
+          provider_job_id?: string | null
+          status?: string
+          storage_path?: string | null
+          transcription_id?: string | null
+          updated_at?: string
+          user_id?: string
+          webhook_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcription_jobs_transcription_id_fkey"
+            columns: ["transcription_id"]
+            isOneToOne: false
+            referencedRelation: "transcriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transcriptions: {
         Row: {
           audio_url: string | null
