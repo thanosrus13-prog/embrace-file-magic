@@ -114,26 +114,16 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
     console.log('Playing with voice:', currentVoice)
     
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${currentVoice.voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY,
+      const response = await synthesizeSpeech({
+        data: {
+          text,
+          voiceId: currentVoice.voiceId,
+          settings: currentVoice.settings,
         },
-        body: JSON.stringify({
-          text: text,
-          model_id: 'eleven_flash_v2_5',
-          voice_settings: currentVoice.settings,
-        }),
       })
 
-      console.log('ElevenLabs response:', response.status)
-      
-      if (response.ok) {
-        console.log('ElevenLabs audio generated successfully')
-        const audioBlob = await response.blob()
-        console.log('Audio blob size:', audioBlob.size)
-        const audioUrl = URL.createObjectURL(audioBlob)
+      if (response?.audio) {
+        const audioUrl = base64ToAudioUrl(response.audio, response.mimeType)
         const audio = new Audio(audioUrl)
         if (startPosition > 0) {
           audio.currentTime = startPosition
