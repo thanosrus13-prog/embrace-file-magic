@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from '../components/FlipPostcard'
 import { useSession } from '@/hooks/useSession'
+import { generateStory } from '@/lib/story.functions'
 
 function NavButton({ href, children, reload, onClick }) {
   return (
