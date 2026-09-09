@@ -1,8 +1,15 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateMemoirPDF } from '../utils/pdfGenerator'
+import { synthesizeSpeech } from '@/lib/tts.functions'
 
-const ELEVENLABS_API_KEY = 'sk_5524bf9007fee37de88e3688670748f596a05939a07bb4d3'
+// Turns base64 audio returned by the server into a playable blob URL.
+function base64ToAudioUrl(base64, mimeType) {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return URL.createObjectURL(new Blob([bytes], { type: mimeType || 'audio/mpeg' }))
+}
 
 const STORY_STYLES = [
   // Cinematic: Adam voice, Stability 0.3, Style 0.6
