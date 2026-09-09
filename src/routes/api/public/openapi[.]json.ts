@@ -141,7 +141,115 @@ const spec = {
         },
       },
     },
+    '/api/transcriptions/jobs': {
+      post: {
+        tags: ['Jobs'],
+        summary: 'Queue a transcription job',
+        description:
+          'Accepts an already-uploaded audio file URL, queues asynchronous transcription and immediately returns a job id. The provider calls back to /api/public/transcription-webhook when finished; clients can also poll the job.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['audio_url'],
+                properties: {
+                  audio_url: { type: 'string', format: 'uri' },
+                  storage_path: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '202': {
+            description: 'Job accepted',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string', format: 'uuid' },
+                        status: { type: 'string', enum: ['queued', 'processing', 'failed'] },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '400': { $ref: '#/components/responses/BadRequest' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+      get: {
+        tags: ['Jobs'],
+        summary: 'List transcription jobs',
+        parameters: [
+          { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+          { name: 'offset', in: 'query', schema: { type: 'integer', minimum: 0, default: 0 } },
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string', enum: ['queued', 'processing', 'completed', 'failed'] },
+          },
+        ],
+        responses: {
+          '200': { description: 'A page of jobs' },
+          '400': { $ref: '#/components/responses/BadRequest' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+        },
+      },
+    },
+    '/api/transcriptions/jobs/{jobId}': {
+      parameters: [
+        { name: 'jobId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+      ],
+      get: {
+        tags: ['Jobs'],
+        summary: 'Get job status',
+        description:
+          'Returns the job status and, once completed, the transcript text and the id of the saved transcription. Polling also reconciles the job with the provider if the webhook has not arrived.',
+        responses: {
+          '200': {
+            description: 'Job status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string', format: 'uuid' },
+                        status: {
+                          type: 'string',
+                          enum: ['queued', 'processing', 'completed', 'failed'],
+                        },
+                        transcription_id: { type: 'string', format: 'uuid', nullable: true },
+                        text: { type: 'string', nullable: true },
+                        error: { type: 'string', nullable: true },
+                        created_at: { type: 'string', format: 'date-time' },
+                        completed_at: { type: 'string', format: 'date-time', nullable: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '400': { $ref: '#/components/responses/BadRequest' },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '404': { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
   },
+
 } as const
 
 export const Route = createFileRoute('/api/public/openapi.json')({

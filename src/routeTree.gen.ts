@@ -15,8 +15,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
+import { Route as ApiPublicTranscriptionWebhookRouteImport } from './routes/api/public/transcription-webhook'
 import { Route as ApiTranscriptionsIndexRouteImport } from './routes/api/transcriptions/index'
 import { Route as ApiTranscriptionsIdRouteImport } from './routes/api/transcriptions/$id'
+import { Route as ApiTranscriptionsJobsIndexRouteImport } from './routes/api/transcriptions/jobs/index'
+import { Route as ApiTranscriptionsJobsJobIdRouteImport } from './routes/api/transcriptions/jobs/$jobId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -48,6 +51,12 @@ const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
   path: '/api/public/openapi.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTranscriptionWebhookRoute =
+  ApiPublicTranscriptionWebhookRouteImport.update({
+    id: '/api/public/transcription-webhook',
+    path: '/api/public/transcription-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiTranscriptionsIndexRoute = ApiTranscriptionsIndexRouteImport.update({
   id: '/api/transcriptions/',
   path: '/api/transcriptions/',
@@ -58,6 +67,18 @@ const ApiTranscriptionsIdRoute = ApiTranscriptionsIdRouteImport.update({
   path: '/api/transcriptions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTranscriptionsJobsIndexRoute =
+  ApiTranscriptionsJobsIndexRouteImport.update({
+    id: '/api/transcriptions/jobs/',
+    path: '/api/transcriptions/jobs/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiTranscriptionsJobsJobIdRoute =
+  ApiTranscriptionsJobsJobIdRouteImport.update({
+    id: '/api/transcriptions/jobs/$jobId',
+    path: '/api/transcriptions/jobs/$jobId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,8 +87,11 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
+  '/api/transcriptions/jobs/$jobId': typeof ApiTranscriptionsJobsJobIdRoute
+  '/api/transcriptions/jobs/': typeof ApiTranscriptionsJobsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,8 +100,11 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions': typeof ApiTranscriptionsIndexRoute
+  '/api/transcriptions/jobs/$jobId': typeof ApiTranscriptionsJobsJobIdRoute
+  '/api/transcriptions/jobs': typeof ApiTranscriptionsJobsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,8 +114,11 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/transcribe': typeof TranscribeRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
   '/api/transcriptions/': typeof ApiTranscriptionsIndexRoute
+  '/api/transcriptions/jobs/$jobId': typeof ApiTranscriptionsJobsJobIdRoute
+  '/api/transcriptions/jobs/': typeof ApiTranscriptionsJobsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,8 +129,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transcribe'
     | '/api/public/openapi.json'
+    | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
     | '/api/transcriptions/'
+    | '/api/transcriptions/jobs/$jobId'
+    | '/api/transcriptions/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -109,8 +142,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transcribe'
     | '/api/public/openapi.json'
+    | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
     | '/api/transcriptions'
+    | '/api/transcriptions/jobs/$jobId'
+    | '/api/transcriptions/jobs'
   id:
     | '__root__'
     | '/'
@@ -119,8 +155,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/transcribe'
     | '/api/public/openapi.json'
+    | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
     | '/api/transcriptions/'
+    | '/api/transcriptions/jobs/$jobId'
+    | '/api/transcriptions/jobs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -130,8 +169,11 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   TranscribeRoute: typeof TranscribeRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
+  ApiPublicTranscriptionWebhookRoute: typeof ApiPublicTranscriptionWebhookRoute
   ApiTranscriptionsIdRoute: typeof ApiTranscriptionsIdRoute
   ApiTranscriptionsIndexRoute: typeof ApiTranscriptionsIndexRoute
+  ApiTranscriptionsJobsJobIdRoute: typeof ApiTranscriptionsJobsJobIdRoute
+  ApiTranscriptionsJobsIndexRoute: typeof ApiTranscriptionsJobsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -178,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOpenapiDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/transcription-webhook': {
+      id: '/api/public/transcription-webhook'
+      path: '/api/public/transcription-webhook'
+      fullPath: '/api/public/transcription-webhook'
+      preLoaderRoute: typeof ApiPublicTranscriptionWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/transcriptions/': {
       id: '/api/transcriptions/'
       path: '/api/transcriptions'
@@ -192,6 +241,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTranscriptionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/transcriptions/jobs/': {
+      id: '/api/transcriptions/jobs/'
+      path: '/api/transcriptions/jobs'
+      fullPath: '/api/transcriptions/jobs/'
+      preLoaderRoute: typeof ApiTranscriptionsJobsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcriptions/jobs/$jobId': {
+      id: '/api/transcriptions/jobs/$jobId'
+      path: '/api/transcriptions/jobs/$jobId'
+      fullPath: '/api/transcriptions/jobs/$jobId'
+      preLoaderRoute: typeof ApiTranscriptionsJobsJobIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -202,8 +265,11 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   TranscribeRoute: TranscribeRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
+  ApiPublicTranscriptionWebhookRoute: ApiPublicTranscriptionWebhookRoute,
   ApiTranscriptionsIdRoute: ApiTranscriptionsIdRoute,
   ApiTranscriptionsIndexRoute: ApiTranscriptionsIndexRoute,
+  ApiTranscriptionsJobsJobIdRoute: ApiTranscriptionsJobsJobIdRoute,
+  ApiTranscriptionsJobsIndexRoute: ApiTranscriptionsJobsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
