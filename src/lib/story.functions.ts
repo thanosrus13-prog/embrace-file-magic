@@ -38,7 +38,7 @@ export const generateStory = createServerFn({ method: 'POST' })
               {
                 role: 'system',
                 content:
-                  'You write short first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 4-6 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble.',
+                  'You write short first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 4-6 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. The story must be 240 characters or fewer.',
               },
               {
                 role: 'user',
@@ -46,7 +46,7 @@ export const generateStory = createServerFn({ method: 'POST' })
                   {
                     type: 'text',
                     text:
-                      'Write the postcard story for these photos. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".',
+                      'Write the postcard story for these photos in 240 characters or less. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".',
                   },
                   ...data.images.map((url) => ({ type: 'image_url', image_url: { url } })),
                 ],
@@ -80,7 +80,8 @@ export const generateStory = createServerFn({ method: 'POST' })
 
       const match = raw.match(/PLACE:\s*(.+)\s*$/i)
       const city = match?.[1]?.trim() || 'Unknown'
-      const narrative = raw.replace(/PLACE:\s*.+\s*$/i, '').trim()
+      let narrative = raw.replace(/PLACE:\s*.+\s*$/i, '').trim()
+      if (narrative.length > 240) narrative = narrative.slice(0, 237) + '...'
 
       return { narrative, city: city || 'Unknown', error: null }
     } catch (err) {
