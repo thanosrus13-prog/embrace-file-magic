@@ -38,7 +38,7 @@ export const generateStory = createServerFn({ method: 'POST' })
               {
                 role: 'system',
                 content:
-                  'You write first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 4-6 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. Keep it under 440 characters.',
+                  'You write short first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 4-6 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble.',
               },
               {
                 role: 'user',

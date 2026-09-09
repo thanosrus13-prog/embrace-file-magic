@@ -118,21 +118,21 @@ function App() {
     const detectLandmark = (filename) => {
       const name = filename.toLowerCase()
       const landmarks = [
-        { keywords: ['eiffel', 'paris'], city: 'Paris', narrative: "I stood beneath the Eiffel Tower, watching the iron lattice reach for the sky. Paris felt alive around me." },
-        { keywords: ['tower', 'london'], city: 'London', narrative: "Big Ben's chimes echoed across Westminster as the Thames slipped quietly by. London felt timeless." },
-        { keywords: ['colosseum', 'rome', 'italy'], city: 'Rome', narrative: "The Colosseum rose before me like a giant from another age. Rome's history hummed in every stone." },
-        { keywords: ['statue', 'liberty', 'new york', 'nyc'], city: 'New York', narrative: "Lady Liberty held her torch high as the ferry carried me toward her. New York felt impossibly grand." },
-        { keywords: ['bridge', 'san francisco', 'golden gate'], city: 'San Francisco', narrative: "The Golden Gate Bridge burned orange through the fog. San Francisco's breeze carried adventure." },
-        { keywords: ['pyramid', 'egypt', 'cairo'], city: 'Cairo', narrative: "The pyramids stood silent against the desert heat. I felt tiny beside their ancient weight." },
-        { keywords: ['beach', 'hawaii', 'maui', 'waikiki'], city: 'Hawaii', narrative: "Palm trees swayed over endless blue water. Hawaii wrapped me in warm, salty air." },
-        { keywords: ['tokyo', 'japan', 'shibuya'], city: 'Tokyo', narrative: "Neon lights and quiet respect filled the streets of Tokyo. The city pulsed with electric energy." },
-        { keywords: ['sydney', 'opera'], city: 'Sydney', narrative: "The Sydney Opera House's white sails caught the sun. The harbor felt calm and bright." },
-        { keywords: ['barcelona', 'sagrada'], city: 'Barcelona', narrative: "Gaudi's Sagrada Familia rose like a stone forest around me. Barcelona was pure art." },
-        { keywords: ['venice', 'italy', 'canal'], city: 'Venice', narrative: "I drifted through Venice's canals, where old buildings leaned over the water. Magic moved slowly here." },
-        { keywords: ['amsterdam', 'netherlands', 'canal'], city: 'Amsterdam', narrative: "Amsterdam's canals wound past bicycles and café terraces. The city felt easy and open." },
-        { keywords: ['berlin', 'wall'], city: 'Berlin', narrative: "I walked where the Wall once stood, now covered in colour. Berlin breathed freedom." },
-        { keywords: ['prague', 'czech'], city: 'Prague', narrative: "Gothic spires pierced the twilight over Prague. The Charles Bridge felt like a fairy tale." },
-        { keywords: ['dubai', 'burj'], city: 'Dubai', narrative: "The Burj Khalifa scraped the clouds above Dubai. Ambition glittered in every direction." },
+        { keywords: ['eiffel', 'paris'], city: 'Paris', narrative: "I stood there in Paris, gazing up at the Eiffel Tower. The iron lattice stretched toward the sky, and I remember thinking how dreams can reach any height. Below, the Champs de Mars stretched out, and I felt truly alive in the City of Light." },
+        { keywords: ['tower', 'london'], city: 'London', narrative: "I was in London when I took this. Big Ben's chimes echoed across Westminster. The Thames flowed quietly beside me, and I watched the city breathe. There's something magical about this place—history and modernity dancing together." },
+        { keywords: ['colosseum', 'rome', 'italy'], city: 'Rome', narrative: "Walking through Rome, I felt like I'd stepped back in time. The Colosseum rose before me, ancient stones telling stories of gladiators and emperors. I traced my fingers along the worn marble and wondered about all the feet that had walked here before mine." },
+        { keywords: ['statue', 'liberty', 'new york', 'nyc'], city: 'New York', narrative: "I remember the first time I saw Lady Liberty. She stood there, torch held high, welcoming me to New York City. The ferry ride to Ellis Island was surreal—ancestors had passed through those waters, and now so had I." },
+        { keywords: ['bridge', 'san francisco', 'golden gate'], city: 'San Francisco', narrative: "The Golden Gate Bridge loomed through the fog in San Francisco. I drove across that orange masterpiece, wind in my hair, feeling the Pacific breeze. This city by the bay has a soul you can feel." },
+        { keywords: ['pyramid', 'egypt', 'cairo'], city: 'Cairo', narrative: "In Cairo, the pyramids rose from the desert sands like ancient guardians. I stood in their shadow, tiny against these millennia-old monuments. The heat shimmered on the sand as I tried to comprehend how humans built such wonders." },
+        { keywords: ['beach', 'hawaii', 'maui', 'waikiki'], city: 'Hawaii', narrative: "I was in Hawaii, where the waves never stop and the aloha spirit is real. The palm trees swayed, the ocean stretched endless, and I understood why people come here to find themselves. Paradise isn't just a word—it's a feeling." },
+        { keywords: ['tokyo', 'japan', 'shibuya'], city: 'Tokyo', narrative: "Tokyo hit me like a future I didn't know existed. Neon lights, quiet respect, vending machines on every corner. I wandered through Shibuya crossing, a river of people flowing past. This city pulses with energy you can feel in your bones." },
+        { keywords: ['sydney', 'opera'], city: 'Sydney', narrative: "The Sydney Opera House's sails caught the Australian sun. I sat at Circular Quay, watching ferries glide across the harbor. The air was warm, the vibe relaxed—this is what living looks like when you get it right." },
+        { keywords: ['barcelona', 'sagrada'], city: 'Barcelona', narrative: "Gaudi's masterpiece in Barcelona left me speechless. The Sagrada Familia rose like a forest made of stone. I looked up and saw light filtering through stained glass windows—nature and faith, intertwined. This city is art itself." },
+        { keywords: ['venice', 'italy', 'canal'], city: 'Venice', narrative: "I drifted through Venice on a gondola, the canals reflecting centuries of stories. The Grand Canal unfolded like a painting. Every bridge I crossed connected me to poets, lovers, and dreamers who came before. No cars, just magic." },
+        { keywords: ['amsterdam', 'netherlands', 'canal'], city: 'Amsterdam', narrative: "Amsterdam's canals wound through the city like veins of history. I cycled past tulip stands and café terraces. The Dutch have a way of making life look effortless—bikes everywhere, tolerance woven into their DNA." },
+        { keywords: ['berlin', 'wall'], city: 'Berlin', narrative: "Berlin feels like freedom. I walked where the Wall once divided families. Now street art covers what was once a scar. This city rebuilt itself from rubble to revolution. You can feel the resilience in every cobblestone." },
+        { keywords: ['prague', 'czech'], city: 'Prague', narrative: "Prague's Gothic spires pierced the twilight sky. I crossed the Charles Bridge as the castle lit up across the Vltava. This city feels like stepping into a fairy tale—cobblestones, castle walls, and astronomical clocks." },
+        { keywords: ['dubai', 'burj'], city: 'Dubai', narrative: "Dubai's Burj Khalifa scraped the clouds. I stood in the desert, surrounded by futuristic towers rising from sand. This place defies logic—man-made islands, indoor ski slopes, ambition without limits. The future is here." },
       ]
       
       for (const landmark of landmarks) {
@@ -266,11 +266,11 @@ function App() {
         }
 
         const defaultNarratives = [
-          "The light was perfect and the moment felt fleeting. I stood there, camera in hand, holding onto a memory.",
-          "The world seemed to pause just for me. I breathed it all in—the sounds, the smells, the warmth of that sun.",
-          "I saw this view and knew I'd found something special. I grabbed my camera and captured a piece of forever.",
-          "I walked until my feet ached and my mind overflowed. This is what I came for—the feeling of being alive.",
-          "I found peace here, away from everything familiar. Some places change you, and this one did."
+          "I remember that day like it was yesterday. The light was perfect, the moment fleeting. I stood there, camera in hand, knowing I'd never recreate this exact feeling. Some memories are meant to be kept close.",
+          "There I was, exactly where I needed to be. The world seemed to pause just for me. I breathed it all in—the sounds, the smells, the warmth of that sun. This photo holds a piece of my soul.",
+          "I was traveling through, not sure where I belonged. Then I saw this view and knew. Sometimes the universe conspires to lead us to perfect moments. I grabbed my camera and captured a piece of forever.",
+          "That morning, I woke up with purpose. I walked until my feet ached, explored until my mind overflowed. This is what I came for—not the destination, but the feeling of being completely alive in that moment.",
+          "I found peace here. Away from the noise, away from everything familiar. Just me, my thoughts, and this incredible view. Some places change you. This one did."
         ]
 
         narrative = detected ? detected.narrative : defaultNarratives[Math.floor(Math.random() * defaultNarratives.length)]

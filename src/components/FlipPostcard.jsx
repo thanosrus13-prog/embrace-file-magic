@@ -31,22 +31,22 @@ const rewriteStory = (originalStory, styleId, city) => {
   
   const stories = {
     // Cinematic: Epic movie trailer starting with "In a world where..."
-    cinematic: `In a world where memories come alive, one traveler journeyed to ${location}. ${originalStory.replace(/^I /, 'The protagonist ').toLowerCase()} A legend in the making.`,
+    cinematic: `In a world where memories come alive, one traveler embarked on an unforgettable journey to ${location}. ${originalStory.replace(/^I /, 'The protagonist ').toLowerCase()} This is not just a story—it's a legend in the making.`,
     
     // Nostalgia: Warm, grainy 1970s diary entry
-    nostalgia: `Dear Diary, I found myself in ${location}, and the warmth stays with me still. ${originalStory.replace(/^I /, '')} Simpler times, pure moments.`,
+    nostalgia: `Dear Diary, December 1975. I found myself in ${location}, and the warmth of it all stays with me still. The photos have that golden grain, you know? ${originalStory.replace(/^I /, '')} Those were simpler times. We didn't have all this technology, just pure moments.`,
     
     // Holiday Blues: Melancholic 'end-of-trip' vibe
-    blues: `The last day in ${location} came too soon. ${originalStory.replace(/\./g, '...').replace(/^I /, 'We ').toLowerCase()} Until next time.`,
+    blues: `The last day of the trip always comes too soon. As I look back at ${location}, there's that familiar ache—the knowing that I'll have to leave this magic behind. The suitcase is almost packed. The flight is in the morning. ${originalStory.replace(/\./g, '...').replace(/^I /, 'We ').toLowerCase()} Until next time, my friend.`,
     
     // Joyful: High-energy language and exclamation points
-    joyful: `What an incredible adventure in ${location}! ${originalStory.replace(/\./g, '!').replace(/^I /, 'I ')} Pure magic!`,
+    joyful: `OH WOW! What an absolutely incredible adventure we had in ${location}! ${originalStory.replace(/\./g, '!').replace(/^I /, 'I ')} Every single moment was absolutely magical and I cherished every second! Can't wait to go back!`,
     
     // Stressful: Focus on travel chaos (missed flights, rain, lost bags)
-    stressful: `Nothing went to plan in ${location}. Rain, delays, lost bags. ${originalStory.replace(/^I /, 'And of course, ').toLowerCase()} But I survived!`,
+    stressful: `Okay so NOT everything went to plan in ${location}. First, it rained the ENTIRE first day. Then I missed my connecting flight because of delays. My bag got lost for TWO DAYS and I had to buy emergency clothes. ${originalStory.replace(/^I /, 'And of course, ').toLowerCase()} But hey, I survived!`,
     
     // Nat Geo: Sophisticated, scientific observer
-    natgeo: `Field notes from ${location}: the subject showed deep cultural immersion. ${originalStory.replace(/^I /, 'The observer ').toLowerCase()} A fascinating modern wanderer.`,
+    natgeo: `Field observations from ${location}: The subject exhibited signs of profound cultural immersion during the expedition. Notable behavioral patterns include extended periods of contemplation and documented instances of awe. ${originalStory.replace(/^I /, 'The observer ').toLowerCase()} A fascinating specimen of the modern wanderer, adapting to foreign environments with remarkable resilience.`,
   }
   return stories[styleId] || originalStory
 }
@@ -501,28 +501,48 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
         <path d="M395,396 Q455,388 505,400 Q555,412 605,394" stroke="#c1336b" strokeWidth="68" fill="none" opacity="0.42" strokeLinecap="round"/>
       </svg>
 
-      {/* Main content row: narrative + divider + stamp/address */}
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        {/* Left 70% - Narrative */}
-        <div style={{ flex: 7, paddingRight: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '280px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
-            {(() => {
-              if (narrative.length <= 440) return narrative
-              const truncated = narrative.slice(0, 440)
-              const lastPeriod = truncated.lastIndexOf('.')
-              const lastExclaim = truncated.lastIndexOf('!')
-              const lastQuestion = truncated.lastIndexOf('?')
-              const lastPunctuation = Math.max(lastPeriod, lastExclaim, lastQuestion)
-              return lastPunctuation > 240 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
-            })()}
-          </p>
+      {/* Left 70% - Narrative */}
+      <div style={{ flex: 7, paddingRight: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '260px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+          {(() => {
+            if (narrative.length <= 350) return narrative
+            const truncated = narrative.slice(0, 350)
+            const lastPeriod = truncated.lastIndexOf('.')
+            const lastExclaim = truncated.lastIndexOf('!')
+            const lastQuestion = truncated.lastIndexOf('?')
+            const lastPunctuation = Math.max(lastPeriod, lastExclaim, lastQuestion)
+            return lastPunctuation > 200 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
+          })()}
+        </p>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); playAudio() }}
+            disabled={isRegenerating || isLoadingAudio}
+            className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
+            style={{ backgroundColor: isPlaying ? '#b45309' : '#7c3aed' }}
+          >
+            {isPlaying ? 'Stop' : 'Listen'}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDownload()
+            }}
+            disabled={isDownloading}
+            className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
+            style={{ backgroundColor: isDownloading ? '#047857' : '#059669' }}
+          >
+            {isDownloading ? 'Generating...' : 'Download Memoir'}
+          </button>
         </div>
+      </div>
 
-        {/* Dividing Line */}
-        <div style={{ width: '3px', background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.5) 80%, transparent)', marginRight: '8px' }} />
+      {/* Dividing Line */}
+      <div style={{ width: '3px', background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.5) 80%, transparent)', marginRight: '8px' }} />
 
-        {/* Right 30% - Stamp & Address */}
-        <div style={{ flex: 3, paddingLeft: '16px', display: 'flex', flexDirection: 'column' }}>
+      {/* Right 30% - Stamp & Address */}
+      <div style={{ flex: 3, paddingLeft: '16px', display: 'flex', flexDirection: 'column' }}>
         {/* Stamp area with decorative frame */}
         <div 
           style={{
@@ -551,31 +571,6 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
           <div style={{ height: '2px', background: 'rgba(255,255,255,0.5)', marginBottom: '24px' }} />
           <div style={{ height: '2px', background: 'rgba(255,255,255,0.5)' }} />
         </div>
-      </div>
-      </div>
-
-      {/* Bottom buttons */}
-      <div style={{ display: 'flex', gap: '12px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
-        <button
-          onClick={(e) => { e.stopPropagation(); playAudio() }}
-          disabled={isRegenerating || isLoadingAudio}
-          className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
-          style={{ backgroundColor: isPlaying ? '#b45309' : '#7c3aed' }}
-        >
-          {isPlaying ? 'Stop' : 'Listen'}
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleDownload()
-          }}
-          disabled={isDownloading}
-          className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
-          style={{ backgroundColor: isDownloading ? '#047857' : '#059669' }}
-        >
-          {isDownloading ? 'Generating...' : 'Download Memoir'}
-        </button>
       </div>
     </div>
   )
