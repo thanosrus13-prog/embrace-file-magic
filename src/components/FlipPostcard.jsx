@@ -268,9 +268,23 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
   const handleStyleSelect = async (style) => {
     stopAudio() // Stop any playing audio
     setIsRegenerating(true)
-    const newStory = rewriteStory(initialNarrative, style.id, city)
-    setNarrative(newStory)
     setCurrentVoice({ voiceId: style.voiceId, settings: style.settings })
+
+    // Ask the vision model to retell the story in the chosen style, grounded
+    // in the uploaded photos. Fall back to the local rewrite if it fails.
+    let newStory = null
+    try {
+      const sourceImages = imagesArray.length > 0 ? imagesArray : [image]
+      const payload = (await Promise.all(sourceImages.slice(0, 6).map((img) => toDataUrl(img.url)))).filter(Boolean)
+      if (payload.length) {
+        const result = await regenerateStory({ data: { images: payload, style: style.id } })
+        if (result?.narrative) newStory = result.narrative
+      }
+    } catch (err) {
+      console.warn('AI style regeneration failed, using local rewrite:', err)
+    }
+    if (!newStory) newStory = rewriteStory(initialNarrative, style.id, city)
+    setNarrative(newStory)
     console.log('Style selected:', style.label, 'Voice ID:', style.voiceId, 'Settings:', style.settings)
     setShowBubbles(false)
     
