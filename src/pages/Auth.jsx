@@ -46,6 +46,31 @@ export default function Auth() {
 
   const onSubmit = async (e) => {
     e.preventDefault()
+
+    if (mode === 'reset') {
+      if (!email) {
+        setStatus('Please enter your email address.')
+        return
+      }
+      setBusy(true)
+      setStatus('Sending your reset link...')
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+        if (error) {
+          setStatus(error.message)
+          return
+        }
+        setStatus('If that email has an account, a reset link is on its way. Check your inbox.')
+      } catch (err) {
+        setStatus(err?.message || 'Something went wrong. Please try again.')
+      } finally {
+        setBusy(false)
+      }
+      return
+    }
+
     if (!email || !password) {
       setStatus('Please enter your email and password.')
       return
@@ -56,6 +81,7 @@ export default function Auth() {
     }
     setBusy(true)
     setStatus(mode === 'signin' ? 'Signing you in...' : 'Creating your account...')
+
 
     try {
       if (mode === 'signin') {
