@@ -132,7 +132,7 @@ const spec = {
         tags: ['Transcriptions'],
         summary: 'Delete a transcription',
         description:
-          'Deletes the record. A database trigger also removes the associated audio file from storage.',
+          'Soft-deletes the record (marked as deleted and hidden from reads) and removes the associated audio file from storage. The change is recorded in the audit log.',
         responses: {
           '204': { description: 'Deleted' },
           '400': { $ref: '#/components/responses/BadRequest' },
