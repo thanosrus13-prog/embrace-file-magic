@@ -31,22 +31,22 @@ const rewriteStory = (originalStory, styleId, city) => {
   
   const stories = {
     // Cinematic: Epic movie trailer starting with "In a world where..."
-    cinematic: `In a world where memories come alive, one traveler embarked on an unforgettable journey to ${location}. ${originalStory.replace(/^I /, 'The protagonist ').toLowerCase()} This is not just a story—it's a legend in the making.`,
+    cinematic: `In a world where memories come alive, one traveler journeyed to ${location}. ${originalStory.replace(/^I /, 'The protagonist ').toLowerCase()} A legend in the making.`,
     
     // Nostalgia: Warm, grainy 1970s diary entry
-    nostalgia: `Dear Diary, December 1975. I found myself in ${location}, and the warmth of it all stays with me still. The photos have that golden grain, you know? ${originalStory.replace(/^I /, '')} Those were simpler times. We didn't have all this technology, just pure moments.`,
+    nostalgia: `Dear Diary, I found myself in ${location}, and the warmth stays with me still. ${originalStory.replace(/^I /, '')} Simpler times, pure moments.`,
     
     // Holiday Blues: Melancholic 'end-of-trip' vibe
-    blues: `The last day of the trip always comes too soon. As I look back at ${location}, there's that familiar ache—the knowing that I'll have to leave this magic behind. The suitcase is almost packed. The flight is in the morning. ${originalStory.replace(/\./g, '...').replace(/^I /, 'We ').toLowerCase()} Until next time, my friend.`,
+    blues: `The last day in ${location} came too soon. ${originalStory.replace(/\./g, '...').replace(/^I /, 'We ').toLowerCase()} Until next time.`,
     
     // Joyful: High-energy language and exclamation points
-    joyful: `OH WOW! What an absolutely incredible adventure we had in ${location}! ${originalStory.replace(/\./g, '!').replace(/^I /, 'I ')} Every single moment was absolutely magical and I cherished every second! Can't wait to go back!`,
+    joyful: `What an incredible adventure in ${location}! ${originalStory.replace(/\./g, '!').replace(/^I /, 'I ')} Pure magic!`,
     
     // Stressful: Focus on travel chaos (missed flights, rain, lost bags)
-    stressful: `Okay so NOT everything went to plan in ${location}. First, it rained the ENTIRE first day. Then I missed my connecting flight because of delays. My bag got lost for TWO DAYS and I had to buy emergency clothes. ${originalStory.replace(/^I /, 'And of course, ').toLowerCase()} But hey, I survived!`,
+    stressful: `Nothing went to plan in ${location}. Rain, delays, lost bags. ${originalStory.replace(/^I /, 'And of course, ').toLowerCase()} But I survived!`,
     
     // Nat Geo: Sophisticated, scientific observer
-    natgeo: `Field observations from ${location}: The subject exhibited signs of profound cultural immersion during the expedition. Notable behavioral patterns include extended periods of contemplation and documented instances of awe. ${originalStory.replace(/^I /, 'The observer ').toLowerCase()} A fascinating specimen of the modern wanderer, adapting to foreign environments with remarkable resilience.`,
+    natgeo: `Field notes from ${location}: the subject showed deep cultural immersion. ${originalStory.replace(/^I /, 'The observer ').toLowerCase()} A fascinating modern wanderer.`,
   }
   return stories[styleId] || originalStory
 }
@@ -503,15 +503,15 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
 
       {/* Left 70% - Narrative */}
       <div style={{ flex: 7, paddingRight: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '260px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+        <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '220px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
           {(() => {
-            if (narrative.length <= 350) return narrative
-            const truncated = narrative.slice(0, 350)
+            if (narrative.length <= 220) return narrative
+            const truncated = narrative.slice(0, 220)
             const lastPeriod = truncated.lastIndexOf('.')
             const lastExclaim = truncated.lastIndexOf('!')
             const lastQuestion = truncated.lastIndexOf('?')
             const lastPunctuation = Math.max(lastPeriod, lastExclaim, lastQuestion)
-            return lastPunctuation > 200 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
+            return lastPunctuation > 120 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
           })()}
         </p>
         <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
