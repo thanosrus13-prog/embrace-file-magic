@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { authenticateRequest, jsonError } from '@/lib/api-auth.server'
+import { enforceApiRateLimit } from '@/lib/rate-limit.server'
 
 const createJobSchema = z.object({
   audio_url: z.string().url().startsWith('https://'),
@@ -23,6 +24,10 @@ export const Route = createFileRoute('/api/transcriptions/jobs/')({
         const auth = await authenticateRequest(request)
         if (!auth.ok) return auth.response
 
+        // Uploads are expensive: 10 queued jobs per 5 minutes per user.
+        const limited = enforceApiRateLimit('jobs:create', auth.userId, 10, 5 * 60_000)
+        if ('response' in limited) return limited.response
+
         const body = await request.json().catch(() => null)
         const parsed = createJobSchema.safeParse(body)
         if (!parsed.success) {
@@ -42,7 +47,10 @@ export const Route = createFileRoute('/api/transcriptions/jobs/')({
 
         return Response.json(
           { data: { id: result.id, status: result.status, error: result.error } },
-          { status: 202, headers: { Location: `/api/transcriptions/jobs/${result.id}` } },
+          {
+            status: 202,
+            headers: { ...limited.headers, Location: `/api/transcriptions/jobs/${result.id}` },
+          },
         )
       },
 
@@ -50,6 +58,10 @@ export const Route = createFileRoute('/api/transcriptions/jobs/')({
       GET: async ({ request }) => {
         const auth = await authenticateRequest(request)
         if (!auth.ok) return auth.response
+
+        // 60 job-list reads per minute per user.
+        const listLimited = enforceApiRateLimit('jobs:list', auth.userId, 60, 60_000)
+        if ('response' in listLimited) return listLimited.response
 
         const url = new URL(request.url)
         const parsed = listSchema.safeParse(Object.fromEntries(url.searchParams))
@@ -72,7 +84,7 @@ export const Route = createFileRoute('/api/transcriptions/jobs/')({
 
         return Response.json(
           { data: data ?? [], pagination: { limit, offset, total: count ?? 0 } },
-          { headers: { 'Cache-Control': 'private, no-store' } },
+          { headers: { ...listLimited.headers, 'Cache-Control': 'private, no-store' } },
         )
       },
     },
