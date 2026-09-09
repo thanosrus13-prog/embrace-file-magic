@@ -137,18 +137,25 @@ export const generateStory = createServerFn({ method: 'POST' })
         }
       }
 
-      // If the story is over 240 characters, trim it back to the end of the
-      // last complete sentence that fits within the limit (no mid-sentence cuts).
+      // The story must NEVER exceed 240 characters. First try trimming to the
+      // last complete sentence that fits; if that still leaves it over the
+      // limit, fall back to the last word boundary that fits (never mid-word,
+      // never an ellipsis, and guaranteed <= 240 characters).
       if (narrative.length > 240) {
         const withinLimit = narrative.slice(0, 240)
         const lastSentenceEnd = Math.max(
           withinLimit.lastIndexOf('. '),
           withinLimit.lastIndexOf('! '),
-          withinLimit.lastIndexOf('? '),
-          narrative.endsWith('.') && narrative.length <= 240 ? narrative.length - 1 : -1
+          withinLimit.lastIndexOf('? ')
         )
-        if (lastSentenceEnd > 0) {
+        if (lastSentenceEnd >= 120) {
           narrative = withinLimit.slice(0, lastSentenceEnd + 1).trim()
+        }
+        if (narrative.length > 240) {
+          const lastSpace = withinLimit.lastIndexOf(' ')
+          narrative = (lastSpace > 0 ? withinLimit.slice(0, lastSpace) : withinLimit)
+            .replace(/[,.;:!?\s]+$/, '')
+            .trim()
         }
       }
       if (narrative.length < 220) {
