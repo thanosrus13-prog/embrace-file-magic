@@ -1,175 +1,193 @@
 import { createServerFn } from '@tanstack/react-start'
 
-type StoryInput = { images: string[] }
+type StoryInput = { images: string[]; style?: string }
+type StoryResult = { narrative: string | null; city: string | null; error: string | null }
+
+// Tone directions for the "Regenerate Story" styles. The story content must
+// always come from the photos; the style only changes HOW it is told.
+const STYLE_PROMPTS: Record<string, string> = {
+  cinematic:
+    'Tell it like an epic movie-trailer voiceover: dramatic, sweeping, larger-than-life — but every detail must come from what is visible in the photos.',
+  nostalgia:
+    'Tell it like a warm, grainy 1970s diary entry: gentle, wistful, fondly remembering the exact moments visible in the photos.',
+  blues:
+    'Tell it with melancholic end-of-trip blues: the sadness of leaving, looking back at the places and moments visible in the photos before the flight home.',
+  joyful:
+    'Tell it with pure joy and high energy: excited, delighted, exclaiming about the specific things visible in the photos.',
+  stressful:
+    'Tell it as a chaotic, stressful travel misadventure: the trip visible in the photos retold as frantic, rushed and nerve-wracking, while still describing what is actually in the photos.',
+  natgeo:
+    'Tell it like a sophisticated National Geographic field note: an observant, documentary tone describing the scenes, environment and subjects visible in the photos.',
+}
+
+const BASE_RULES =
+  'Base the story ONLY on what is visibly in the photos: the places, objects, weather, people, colours, activities and mood. Name concrete details you can actually see in EACH photo. Never invent a famous landmark or city that is not clearly visible. Write 2-4 sentences in past tense, first person, no hashtags, no emoji, no preamble. The story MUST be between 220 and 240 characters long.'
+
+function validateImages(input: StoryInput) {
+  const images = Array.isArray(input?.images) ? input.images : []
+  if (!images.length) throw new Error('At least one image is required')
+  if (images.length > 6) throw new Error('Too many images (max 6)')
+  for (const img of images) {
+    if (typeof img !== 'string' || !img.startsWith('data:image/')) {
+      throw new Error('Images must be data URLs')
+    }
+    if (img.length > 1_500_000) throw new Error('Image is too large')
+  }
+  return images
+}
+
+// Guarantees the story never exceeds 240 characters: trim to the last
+// complete sentence that fits, else the last word boundary (never mid-word,
+// never an ellipsis).
+function capAt240(narrative: string): string {
+  if (narrative.length <= 240) return narrative
+  const withinLimit = narrative.slice(0, 240)
+  const lastSentenceEnd = Math.max(
+    withinLimit.lastIndexOf('. '),
+    withinLimit.lastIndexOf('! '),
+    withinLimit.lastIndexOf('? ')
+  )
+  if (lastSentenceEnd >= 120) {
+    return withinLimit.slice(0, lastSentenceEnd + 1).trim()
+  }
+  const lastSpace = withinLimit.lastIndexOf(' ')
+  return (lastSpace > 0 ? withinLimit.slice(0, lastSpace) : withinLimit)
+    .replace(/[,.;:!?\s]+$/, '')
+    .trim()
+}
+
+async function writeStoryFromPhotos(
+  images: string[],
+  styleId: string | undefined
+): Promise<StoryResult> {
+  const { fetchWithRetry, requireEnv } = await import('./ai-proxy.server')
+  const apiKey = requireEnv('LOVABLE_API_KEY')
+
+  const styleRule = styleId && STYLE_PROMPTS[styleId] ? STYLE_PROMPTS[styleId] : null
+  const systemPrompt = styleRule
+    ? `You write short postcard memories about a set of photos from one trip. ${styleRule} ${BASE_RULES} You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one.`
+    : `You write short first-person postcard memories about a set of photos from one trip. You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one. Write warm, vivid sentences. ${BASE_RULES}`
+
+  const userText = styleRule
+    ? `Here are ${images.length} photos from the trip. Write one postcard story between 220 and 240 characters about what is visible in these photos, told in the requested style, mentioning something visible from EVERY photo (photo 1 through photo ${images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`
+    : `Here are ${images.length} photos from the trip. Write one postcard story between 220 and 240 characters that mentions something visible from EVERY photo (photo 1 through photo ${images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`
+
+  const buildMessages = (correction?: string) => [
+    { role: 'system', content: systemPrompt },
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: userText },
+        ...images.flatMap((url, i) => [
+          { type: 'text', text: `Photo ${i + 1}:` },
+          { type: 'image_url', image_url: { url } },
+        ]),
+      ],
+    },
+    ...(correction ? [{ role: 'user', content: correction }] : []),
+  ]
+
+  const callModel = async (correction?: string, retries = 2) => {
+    const res = await fetchWithRetry(
+      'https://ai.gateway.lovable.dev/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: 'google/gemini-2.5-flash', messages: buildMessages(correction) }),
+      },
+      { retries, timeoutMs: 60_000 }
+    )
+    if (!res.ok) return { status: res.status, narrative: null as string | null, city: null as string | null }
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
+    const raw = json.choices?.[0]?.message?.content?.trim() ?? ''
+    const match = raw.match(/PLACE:\s*(.+)\s*$/i)
+    return {
+      status: res.status,
+      narrative: raw.replace(/PLACE:\s*.+\s*$/i, '').trim() || null,
+      city: match?.[1]?.trim() || null,
+    }
+  }
+
+  const first = await callModel()
+  if (first.narrative === null && first.status !== 200) {
+    console.error('Story generation error', first.status)
+    return {
+      narrative: null,
+      city: null,
+      error:
+        first.status === 429
+          ? 'Story service is busy, please retry shortly.'
+          : first.status === 402
+            ? 'AI credits are exhausted. Please top up to keep generating stories.'
+            : 'Story service unavailable.',
+    }
+  }
+  if (!first.narrative) return { narrative: null, city: null, error: 'No story was generated.' }
+
+  let narrative = first.narrative
+  const city = first.city || 'Unknown'
+
+  // If the model missed the 220–240 range, retry once with an explicit correction.
+  if (narrative.length < 220 || narrative.length > 240) {
+    const retry = await callModel(
+      `Your previous story was ${narrative.length} characters. Please rewrite it to be between 220 and 240 characters, keeping the same style and grounding it in details visible in every photo.`,
+      1
+    )
+    if (retry.narrative) {
+      if (retry.narrative.length >= 220 && retry.narrative.length <= 240) {
+        return { narrative: retry.narrative, city: retry.city || city, error: null }
+      }
+      narrative = retry.narrative
+    }
+  }
+
+  narrative = capAt240(narrative)
+  if (narrative.length < 220) {
+    return {
+      narrative: null,
+      city: null,
+      error: 'The generated story was too short. Please try again or upload clearer photos.',
+    }
+  }
+
+  return { narrative, city, error: null }
+}
 
 // Generates a first-person postcard narrative that is grounded in what the
 // uploaded photos actually show (vision model via the Lovable AI gateway).
 export const generateStory = createServerFn({ method: 'POST' })
-  .inputValidator((input: StoryInput) => {
-    const images = Array.isArray(input?.images) ? input.images : []
-    if (!images.length) throw new Error('At least one image is required')
-    if (images.length > 6) throw new Error('Too many images (max 6)')
-    for (const img of images) {
-      if (typeof img !== 'string' || !img.startsWith('data:image/')) {
-        throw new Error('Images must be data URLs')
-      }
-      if (img.length > 1_500_000) throw new Error('Image is too large')
-    }
-    return { images }
-  })
+  .inputValidator((input: StoryInput) => ({ images: validateImages(input) }))
   .handler(async ({ data }) => {
-    const { fetchWithRetry, enforceRateLimit, requireEnv, ProxyError } = await import('./ai-proxy.server')
+    const { enforceRateLimit, ProxyError } = await import('./ai-proxy.server')
     const { getRequestIP } = await import('@tanstack/react-start/server')
-
     try {
       const caller = getRequestIP({ xForwardedFor: true }) ?? 'anonymous'
       enforceRateLimit(`story:${caller}`, 15, 60_000)
-
-      const apiKey = requireEnv('LOVABLE_API_KEY')
-
-      const res = await fetchWithRetry(
-        'https://ai.gateway.lovable.dev/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [
-              {
-                role: 'system',
-                content:
-                  'You write short first-person postcard memories about a set of photos from one trip. You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one. Base the story ONLY on what is visibly in the photos: the places, objects, weather, people, colours, activities and mood. Name concrete details you can actually see in each photo. Never invent a famous landmark or city that is not clearly visible. Write 2-4 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. The story must be between 220 and 240 characters long.',
-              },
-              {
-                role: 'user',
-                content: [
-                  {
-                    type: 'text',
-                    text: `Here are ${data.images.length} photos from the trip. Write one postcard story between 220 and 240 characters that mentions something visible from EVERY photo (photo 1 through photo ${data.images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`,
-                  },
-                  ...data.images.flatMap((url, i) => [
-                    { type: 'text', text: `Photo ${i + 1}:` },
-                    { type: 'image_url', image_url: { url } },
-                  ]),
-                ],
-              },
-            ],
-          }),
-        },
-        { retries: 2, timeoutMs: 60_000 },
-      )
-
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '')
-        console.error('Story generation error', res.status, detail.slice(0, 300))
-        return {
-          narrative: null,
-          city: null,
-          error:
-            res.status === 429
-              ? 'Story service is busy, please retry shortly.'
-              : res.status === 402
-                ? 'AI credits are exhausted. Please top up to keep generating stories.'
-                : 'Story service unavailable.',
-        }
-      }
-
-      const json = (await res.json()) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
-      const raw = json.choices?.[0]?.message?.content?.trim() ?? ''
-      if (!raw) return { narrative: null, city: null, error: 'No story was generated.' }
-
-      const match = raw.match(/PLACE:\s*(.+)\s*$/i)
-      const city = match?.[1]?.trim() || 'Unknown'
-      let narrative = raw.replace(/PLACE:\s*.+\s*$/i, '').trim()
-
-      // Enforce the 220–240 character target. If the model missed the range,
-      // try once more with an explicit correction before giving up.
-      if (narrative.length < 220 || narrative.length > 240) {
-        const currentLength = narrative.length
-        const retryRes = await fetchWithRetry(
-          'https://ai.gateway.lovable.dev/v1/chat/completions',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-            body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
-              messages: [
-                {
-                  role: 'system',
-                  content:
-                    'You write short first-person postcard memories about a set of photos from one trip. Base the story ONLY on what is visibly in the photos. The story must be between 220 and 240 characters long.',
-                },
-                {
-                  role: 'user',
-                  content: `Here are ${data.images.length} photos from the trip. Write one postcard story between 220 and 240 characters that mentions something visible from every photo. Then on a final separate line write "PLACE: " followed by the specific place or city, or "PLACE: Unknown".`,
-                },
-                ...data.images.flatMap((url, i) => [
-                  { type: 'text', text: `Photo ${i + 1}:` },
-                  { type: 'image_url', image_url: { url } },
-                ]),
-                {
-                  role: 'user',
-                  content: `Your previous story was ${currentLength} characters. Please rewrite it to be between 220 and 240 characters. Keep the same warm, first-person past-tense style and reference details from every photo.`,
-                },
-              ],
-            }),
-          },
-          { retries: 1, timeoutMs: 60_000 },
-        )
-
-        if (retryRes.ok) {
-          const retryJson = (await retryRes.json()) as {
-            choices?: Array<{ message?: { content?: string } }>
-          }
-          const retryRaw = retryJson.choices?.[0]?.message?.content?.trim() ?? ''
-          if (retryRaw) {
-            const retryMatch = retryRaw.match(/PLACE:\s*(.+)\s*$/i)
-            const retryCity = retryMatch?.[1]?.trim() || city
-            const retryNarrative = retryRaw.replace(/PLACE:\s*.+\s*$/i, '').trim()
-            if (retryNarrative.length >= 220 && retryNarrative.length <= 240) {
-              return { narrative: retryNarrative, city: retryCity || 'Unknown', error: null }
-            }
-            // If the retry still missed, fall back to the closest valid length.
-            narrative = retryNarrative
-          }
-        }
-      }
-
-      // The story must NEVER exceed 240 characters. First try trimming to the
-      // last complete sentence that fits; if that still leaves it over the
-      // limit, fall back to the last word boundary that fits (never mid-word,
-      // never an ellipsis, and guaranteed <= 240 characters).
-      if (narrative.length > 240) {
-        const withinLimit = narrative.slice(0, 240)
-        const lastSentenceEnd = Math.max(
-          withinLimit.lastIndexOf('. '),
-          withinLimit.lastIndexOf('! '),
-          withinLimit.lastIndexOf('? ')
-        )
-        if (lastSentenceEnd >= 120) {
-          narrative = withinLimit.slice(0, lastSentenceEnd + 1).trim()
-        }
-        if (narrative.length > 240) {
-          const lastSpace = withinLimit.lastIndexOf(' ')
-          narrative = (lastSpace > 0 ? withinLimit.slice(0, lastSpace) : withinLimit)
-            .replace(/[,.;:!?\s]+$/, '')
-            .trim()
-        }
-      }
-      if (narrative.length < 220) {
-        return {
-          narrative: null,
-          city: null,
-          error: 'The generated story was too short. Please try again or upload clearer photos.',
-        }
-      }
-
-      return { narrative, city: city || 'Unknown', error: null }
+      return await writeStoryFromPhotos(data.images, undefined)
     } catch (err) {
       const message = err instanceof ProxyError ? err.message : 'Story generation failed.'
       console.error('generateStory failed:', err)
+      return { narrative: null, city: null, error: message }
+    }
+  })
+
+// Regenerates the story in a chosen style (cinematic, nostalgia, blues,
+// joyful, stressful, natgeo) while staying heavily grounded in the photos.
+export const regenerateStory = createServerFn({ method: 'POST' })
+  .inputValidator((input: StoryInput) => ({
+    images: validateImages(input),
+    style: typeof input?.style === 'string' ? input.style : '',
+  }))
+  .handler(async ({ data }) => {
+    const { enforceRateLimit, ProxyError } = await import('./ai-proxy.server')
+    const { getRequestIP } = await import('@tanstack/react-start/server')
+    try {
+      const caller = getRequestIP({ xForwardedFor: true }) ?? 'anonymous'
+      enforceRateLimit(`story:${caller}`, 15, 60_000)
+      return await writeStoryFromPhotos(data.images, data.style)
+    } catch (err) {
+      const message = err instanceof ProxyError ? err.message : 'Story generation failed.'
+      console.error('regenerateStory failed:', err)
       return { narrative: null, city: null, error: message }
     }
   })

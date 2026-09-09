@@ -2,6 +2,29 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateMemoirPDF } from '../utils/pdfGenerator'
 import { synthesizeSpeech } from '@/lib/tts.functions'
+import { regenerateStory } from '@/lib/story.functions'
+
+// Shrink an image down to a compact data URL for the vision model.
+const toDataUrl = (src, maxSide = 768) =>
+  new Promise((resolve) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(img.width * scale))
+      canvas.height = Math.max(1, Math.round(img.height * scale))
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      try {
+        resolve(canvas.toDataURL('image/jpeg', 0.72))
+      } catch {
+        resolve(null)
+      }
+    }
+    img.onerror = () => resolve(null)
+    img.src = src
+  })
 
 // Turns base64 audio returned by the server into a playable blob URL.
 function base64ToAudioUrl(base64, mimeType) {
@@ -245,9 +268,23 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
   const handleStyleSelect = async (style) => {
     stopAudio() // Stop any playing audio
     setIsRegenerating(true)
-    const newStory = rewriteStory(initialNarrative, style.id, city)
-    setNarrative(newStory)
     setCurrentVoice({ voiceId: style.voiceId, settings: style.settings })
+
+    // Ask the vision model to retell the story in the chosen style, grounded
+    // in the uploaded photos. Fall back to the local rewrite if it fails.
+    let newStory = null
+    try {
+      const sourceImages = imagesArray.length > 0 ? imagesArray : [image]
+      const payload = (await Promise.all(sourceImages.slice(0, 6).map((img) => toDataUrl(img.url)))).filter(Boolean)
+      if (payload.length) {
+        const result = await regenerateStory({ data: { images: payload, style: style.id } })
+        if (result?.narrative) newStory = result.narrative
+      }
+    } catch (err) {
+      console.warn('AI style regeneration failed, using local rewrite:', err)
+    }
+    if (!newStory) newStory = rewriteStory(initialNarrative, style.id, city)
+    setNarrative(newStory)
     console.log('Style selected:', style.label, 'Voice ID:', style.voiceId, 'Settings:', style.settings)
     setShowBubbles(false)
     
