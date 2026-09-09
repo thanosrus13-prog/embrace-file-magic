@@ -1,0 +1,41 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { authenticateRequest, jsonError } from '@/lib/api-auth.server'
+import { listQuerySchema } from '@/lib/api-schemas'
+
+const SELECT = 'id, transcription_type, text_content, audio_url, created_at'
+
+export const Route = createFileRoute('/api/transcriptions/')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        const auth = await authenticateRequest(request)
+        if (!auth.ok) return auth.response
+
+        const url = new URL(request.url)
+        const parsed = listQuerySchema.safeParse(Object.fromEntries(url.searchParams))
+        if (!parsed.success) {
+          return jsonError(400, 'Invalid query parameters', parsed.error.flatten().fieldErrors)
+        }
+        const { limit, offset, type, search } = parsed.data
+
+        let query = auth.supabase
+          .from('transcriptions')
+          .select(SELECT, { count: 'exact' })
+          .eq('user_id', auth.userId)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1)
+
+        if (type) query = query.eq('transcription_type', type)
+        if (search) query = query.ilike('text_content', `%${search}%`)
+
+        const { data, error, count } = await query
+        if (error) return jsonError(500, 'Failed to fetch transcriptions')
+
+        return Response.json(
+          { data: data ?? [], pagination: { limit, offset, total: count ?? 0 } },
+          { headers: { 'Cache-Control': 'private, no-store' } },
+        )
+      },
+    },
+  },
+})
