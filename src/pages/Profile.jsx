@@ -24,6 +24,7 @@ export default function Profile() {
     const { data, error } = await supabase
       .from('transcriptions')
       .select('id, transcription_type, text_content, audio_url, storage_path, created_at')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (error) console.error('Failed to load transcriptions:', error.message)
     setHistory(error ? [] : (data || []))
@@ -34,7 +35,12 @@ export default function Profile() {
 
   const deleteTranscription = async (id) => {
     const item = history.find(t => t.id === id)
-    const { error } = await supabase.from('transcriptions').delete().eq('id', id)
+    // Soft delete: the record is kept and hidden, and the audit log records it
+    const { error } = await supabase
+      .from('transcriptions')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .is('deleted_at', null)
     if (error) { console.error('Failed to delete transcription:', error.message); return }
     if (item?.storage_path) {
       const { error: storageError } = await supabase.storage.from('audio_files').remove([item.storage_path])

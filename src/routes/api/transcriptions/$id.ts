@@ -21,6 +21,7 @@ export const Route = createFileRoute('/api/transcriptions/$id')({
           .select(SELECT)
           .eq('id', parsed.data.id)
           .eq('user_id', auth.userId)
+          .is('deleted_at', null)
           .maybeSingle()
 
         if (error) return jsonError(500, 'Failed to fetch transcription')
@@ -38,11 +39,13 @@ export const Route = createFileRoute('/api/transcriptions/$id')({
           return jsonError(400, 'Invalid id', parsed.error.flatten().fieldErrors)
         }
 
+        // Soft delete: the row is retained and excluded from reads
         const { data, error } = await auth.supabase
           .from('transcriptions')
-          .delete()
+          .update({ deleted_at: new Date().toISOString() })
           .eq('id', parsed.data.id)
           .eq('user_id', auth.userId)
+          .is('deleted_at', null)
           .select('id, storage_path')
 
         if (error) return jsonError(500, 'Failed to delete transcription')

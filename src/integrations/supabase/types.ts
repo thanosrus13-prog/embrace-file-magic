@@ -14,10 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       transcriptions: {
         Row: {
           audio_url: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           storage_path: string | null
           text_content: string
@@ -27,6 +61,7 @@ export type Database = {
         Insert: {
           audio_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           storage_path?: string | null
           text_content: string
@@ -36,6 +71,7 @@ export type Database = {
         Update: {
           audio_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           storage_path?: string | null
           text_content?: string
