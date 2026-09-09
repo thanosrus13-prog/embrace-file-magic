@@ -150,9 +150,7 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
           })
         }
       } else {
-        const errorText = await response.text()
-        console.log('ElevenLabs error:', response.status, errorText)
-        console.log('FALLING BACK to browser TTS')
+        console.log('Voice service unavailable:', response?.error, '- falling back to browser TTS')
         setIsLoadingAudio(false)
         // Fallback to browser TTS with better voice
         speechSynthesis.cancel()
