@@ -471,14 +471,18 @@ function App() {
 
       {/* Process button */}
       {images.length > 0 && (
-        <div className="w-full max-w-sm mt-16 flex justify-center">
+        <div className="w-full max-w-sm mt-16 flex flex-col items-center gap-3">
           <button
             onClick={processImages}
-            className="w-full px-8 py-3 rounded-xl text-2xl font-bold text-white cursor-pointer hover-ltr"
+            disabled={busy}
+            className="w-full px-8 py-3 rounded-xl text-2xl font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
             style={{ backgroundColor: 'black' }}
           >
-            <span className="relative z-10">Process Images</span>
+            <span className="relative z-10">{busy ? 'Reading your photos...' : 'Process Images'}</span>
           </button>
+          {storyError && (
+            <p className="text-sm text-center" style={{ color: '#c0bec6' }}>{storyError}</p>
+          )}
         </div>
       )}
 
