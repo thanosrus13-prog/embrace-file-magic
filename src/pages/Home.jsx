@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlipPostcard from '../components/FlipPostcard'
 import { useSession } from '@/hooks/useSession'
+import { generateStory } from '@/lib/story.functions'
 
 function NavButton({ href, children, reload, onClick }) {
   return (
@@ -53,6 +54,8 @@ function App() {
   const [rendered, setRendered] = useState([])
   const [dragging, setDragging] = useState(false)
   const [scrollRotation, setScrollRotation] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [storyError, setStoryError] = useState('')
   const inputRef = useRef(null)
 
   // Track scroll rotation (throttled)
@@ -205,37 +208,91 @@ function App() {
       return canvas.toDataURL('image/jpeg', 0.9)
     }
 
-    // Create combined image
-    const combinedUrl = await combineImages()
-    
-    // Detect landmark from any of the images
-    let detected = null
-    for (const img of images) {
-      detected = detectLandmark(img.name)
-      if (detected) break
+    // Shrink an image down to a compact data URL for the vision model.
+    const toDataUrl = (src, maxSide = 768) =>
+      new Promise((resolve) => {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height))
+          const canvas = document.createElement('canvas')
+          canvas.width = Math.max(1, Math.round(img.width * scale))
+          canvas.height = Math.max(1, Math.round(img.height * scale))
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          try {
+            resolve(canvas.toDataURL('image/jpeg', 0.72))
+          } catch {
+            resolve(null)
+          }
+        }
+        img.onerror = () => resolve(null)
+        img.src = src
+      })
+
+    setStoryError('')
+    setBusy(true)
+
+    try {
+      // Create combined image
+      const combinedUrl = await combineImages()
+
+      // Ask the vision model to write a story from what the photos actually show.
+      let narrative = null
+      let city = 'Unknown'
+
+      const payload = (await Promise.all(images.slice(0, 6).map((img) => toDataUrl(img.url)))).filter(Boolean)
+
+      if (payload.length) {
+        try {
+          const result = await generateStory({ data: { images: payload } })
+          if (result?.narrative) {
+            narrative = result.narrative
+            city = result.city || 'Unknown'
+          } else if (result?.error) {
+            setStoryError(result.error)
+          }
+        } catch (err) {
+          setStoryError(err?.message || 'Could not write a story from these photos.')
+        }
+      }
+
+      if (!narrative) {
+        // Fallback: filename hints, then a generic memory.
+        let detected = null
+        for (const img of images) {
+          detected = detectLandmark(img.name)
+          if (detected) break
+        }
+
+        const defaultNarratives = [
+          "I remember that day like it was yesterday. The light was perfect, the moment fleeting. I stood there, camera in hand, knowing I'd never recreate this exact feeling. Some memories are meant to be kept close.",
+          "There I was, exactly where I needed to be. The world seemed to pause just for me. I breathed it all in—the sounds, the smells, the warmth of that sun. This photo holds a piece of my soul.",
+          "I was traveling through, not sure where I belonged. Then I saw this view and knew. Sometimes the universe conspires to lead us to perfect moments. I grabbed my camera and captured a piece of forever.",
+          "That morning, I woke up with purpose. I walked until my feet ached, explored until my mind overflowed. This is what I came for—not the destination, but the feeling of being completely alive in that moment.",
+          "I found peace here. Away from the noise, away from everything familiar. Just me, my thoughts, and this incredible view. Some places change you. This one did."
+        ]
+
+        narrative = detected ? detected.narrative : defaultNarratives[Math.floor(Math.random() * defaultNarratives.length)]
+        city = detected ? detected.city : 'Unknown'
+      }
+
+      const combinedPostcard = {
+        id: 'combined-' + Date.now(),
+        file: images[0].file,
+        url: combinedUrl,
+        name: images.map(img => img.name).join(' + '),
+        narrative,
+        city,
+        allImages: images
+      }
+
+      setRendered([combinedPostcard])
+    } finally {
+      setBusy(false)
     }
-    
-    // Default personal narrative
-    const defaultNarratives = [
-      "I remember that day like it was yesterday. The light was perfect, the moment fleeting. I stood there, camera in hand, knowing I'd never recreate this exact feeling. Some memories are meant to be kept close.",
-      "There I was, exactly where I needed to be. The world seemed to pause just for me. I breathed it all in—the sounds, the smells, the warmth of that sun. This photo holds a piece of my soul.",
-      "I was traveling through, not sure where I belonged. Then I saw this view and knew. Sometimes the universe conspires to lead us to perfect moments. I grabbed my camera and captured a piece of forever.",
-      "That morning, I woke up with purpose. I walked until my feet ached, explored until my mind overflowed. This is what I came for—not the destination, but the feeling of being completely alive in that moment.",
-      "I found peace here. Away from the noise, away from everything familiar. Just me, my thoughts, and this incredible view. Some places change you. This one did."
-    ]
-    
-    const combinedPostcard = {
-      id: 'combined-' + Date.now(),
-      file: images[0].file,
-      url: combinedUrl,
-      name: images.map(img => img.name).join(' + '),
-      narrative: detected ? detected.narrative : defaultNarratives[Math.floor(Math.random() * defaultNarratives.length)],
-      city: detected ? detected.city : 'Unknown',
-      allImages: images
-    }
-    
-    setRendered([combinedPostcard])
   }
+
 
   return (
     <div className="min-h-screen bg-black text-gray-100 flex flex-col items-center justify-start pb-20" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -414,14 +471,18 @@ function App() {
 
       {/* Process button */}
       {images.length > 0 && (
-        <div className="w-full max-w-sm mt-16 flex justify-center">
+        <div className="w-full max-w-sm mt-16 flex flex-col items-center gap-3">
           <button
             onClick={processImages}
-            className="w-full px-8 py-3 rounded-xl text-2xl font-bold text-white cursor-pointer hover-ltr"
+            disabled={busy}
+            className="w-full px-8 py-3 rounded-xl text-2xl font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
             style={{ backgroundColor: 'black' }}
           >
-            <span className="relative z-10">Process Images</span>
+            <span className="relative z-10">{busy ? 'Reading your photos...' : 'Process Images'}</span>
           </button>
+          {storyError && (
+            <p className="text-sm text-center" style={{ color: '#c0bec6' }}>{storyError}</p>
+          )}
         </div>
       )}
 
