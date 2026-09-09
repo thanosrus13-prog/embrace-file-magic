@@ -117,6 +117,7 @@ export default function Transcribe() {
 
         if (result.status === 'completed') {
           // The job already saved the transcript server-side.
+          clearCachedHistory()
           const fullText = result.text || 'No speech detected'
           const words = fullText.split(' ')
           let currentIndex = 0
