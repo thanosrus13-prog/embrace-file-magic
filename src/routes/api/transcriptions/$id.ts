@@ -43,10 +43,18 @@ export const Route = createFileRoute('/api/transcriptions/$id')({
           .delete()
           .eq('id', parsed.data.id)
           .eq('user_id', auth.userId)
-          .select('id')
+          .select('id, storage_path')
 
         if (error) return jsonError(500, 'Failed to delete transcription')
         if (!data || data.length === 0) return jsonError(404, 'Transcription not found')
+
+        const storagePath = data[0]?.storage_path
+        if (storagePath) {
+          const { error: storageError } = await auth.supabase.storage
+            .from('audio_files')
+            .remove([storagePath])
+          if (storageError) console.error('Failed to delete audio file:', storageError.message)
+        }
 
         return new Response(null, { status: 204 })
       },

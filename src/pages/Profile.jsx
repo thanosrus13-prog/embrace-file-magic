@@ -23,7 +23,7 @@ export default function Profile() {
     setHistoryLoading(true)
     const { data, error } = await supabase
       .from('transcriptions')
-      .select('id, transcription_type, text_content, audio_url, created_at')
+      .select('id, transcription_type, text_content, audio_url, storage_path, created_at')
       .order('created_at', { ascending: false })
     if (error) console.error('Failed to load transcriptions:', error.message)
     setHistory(error ? [] : (data || []))
@@ -33,8 +33,13 @@ export default function Profile() {
   useEffect(() => { loadHistory() }, [loadHistory])
 
   const deleteTranscription = async (id) => {
+    const item = history.find(t => t.id === id)
     const { error } = await supabase.from('transcriptions').delete().eq('id', id)
     if (error) { console.error('Failed to delete transcription:', error.message); return }
+    if (item?.storage_path) {
+      const { error: storageError } = await supabase.storage.from('audio_files').remove([item.storage_path])
+      if (storageError) console.error('Failed to delete audio file:', storageError.message)
+    }
     setHistory(prev => prev.filter(t => t.id !== id))
   }
 
