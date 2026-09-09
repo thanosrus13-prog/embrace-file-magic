@@ -201,27 +201,13 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
     setShowBubbles(false)
     
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${style.voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY,
-        },
-        body: JSON.stringify({
-          text: newStory,
-          model_id: 'eleven_flash_v2_5',
-          voice_settings: style.settings,
-        }),
+      // Warm the voice for the new style; playback happens when the user hits Listen.
+      await synthesizeSpeech({
+        data: { text: newStory, voiceId: style.voiceId, settings: style.settings },
       })
-
-      if (response.ok) {
-        // Audio generated but not auto-played - user can click Listen to hear it
-        setIsRegenerating(false)
-      } else {
-        setIsRegenerating(false)
-      }
     } catch (err) {
-      console.warn('ElevenLabs failed, using browser TTS')
+      console.warn('Voice preload failed, browser TTS will be used:', err)
+    } finally {
       setIsRegenerating(false)
     }
   }
