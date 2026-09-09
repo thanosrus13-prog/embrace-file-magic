@@ -226,6 +226,7 @@ export default function Auth() {
               />
             </label>
 
+            {mode !== 'reset' && (
             <label className="flex flex-col gap-2">
               <span className="text-xs uppercase tracking-wide" style={{ color: '#c0bec6' }}>Password</span>
               <div className="relative">
@@ -247,6 +248,7 @@ export default function Auth() {
                 </button>
               </div>
             </label>
+            )}
 
             {mode === 'signup' && (
               <label className="flex flex-col gap-2">
@@ -262,9 +264,16 @@ export default function Auth() {
               </label>
             )}
 
-            {mode === 'signin' && (
+            {mode !== 'signup' && (
               <div className="flex justify-end">
-                <button type="button" className="text-xs" style={{ color: '#c0bec6' }}>Forgot password?</button>
+                <button
+                  type="button"
+                  onClick={() => switchMode(mode === 'reset' ? 'signin' : 'reset')}
+                  className="text-xs transition-all duration-200 active:opacity-70"
+                  style={{ color: '#c0bec6' }}
+                >
+                  {mode === 'reset' ? 'Back to sign in' : 'Forgot password?'}
+                </button>
               </div>
             )}
 
@@ -275,9 +284,10 @@ export default function Auth() {
               style={{ backgroundColor: 'black' }}
             >
               <span className="relative z-10">
-                {busy ? 'Please wait...' : mode === 'signin' ? 'Sign in' : 'Create account'}
+                {busy ? 'Please wait...' : mode === 'signin' ? 'Sign in' : mode === 'reset' ? 'Send reset link' : 'Create account'}
               </span>
             </button>
+
           </form>
 
           {status && (
