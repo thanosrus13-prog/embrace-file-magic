@@ -38,17 +38,19 @@ export const generateStory = createServerFn({ method: 'POST' })
               {
                 role: 'system',
                 content:
-                  'You write short first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 4-6 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. The story must be 240 characters or fewer.',
+                  'You write short first-person postcard memories about a set of photos from one trip. You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one. Base the story ONLY on what is visibly in the photos: the places, objects, weather, people, colours, activities and mood. Name concrete details you can actually see in each photo. Never invent a famous landmark or city that is not clearly visible. Write 2-4 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. The story must be 240 characters or fewer.',
               },
               {
                 role: 'user',
                 content: [
                   {
                     type: 'text',
-                    text:
-                      'Write the postcard story for these photos in 240 characters or less. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".',
+                    text: `Here are ${data.images.length} photos from the trip. Write one postcard story in 240 characters or less that mentions something visible from EVERY photo (photo 1 through photo ${data.images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`,
                   },
-                  ...data.images.map((url) => ({ type: 'image_url', image_url: { url } })),
+                  ...data.images.flatMap((url, i) => [
+                    { type: 'text', text: `Photo ${i + 1}:` },
+                    { type: 'image_url', image_url: { url } },
+                  ]),
                 ],
               },
             ],
