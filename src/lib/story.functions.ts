@@ -38,7 +38,7 @@ export const generateStory = createServerFn({ method: 'POST' })
               {
                 role: 'system',
                 content:
-                  'You write very short first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 2-3 short, warm sentences in past tense, no hashtags, no emoji, no preamble. Keep it under 200 characters.',
+                  'You write first-person postcard memories. Base the story ONLY on what is visibly in the photos: the place, objects, weather, people, colours, activity and mood. Name concrete details you can actually see. Never invent a famous landmark or city that is not clearly visible. Write 4-6 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. Keep it under 440 characters.',
               },
               {
                 role: 'user',
@@ -46,7 +46,7 @@ export const generateStory = createServerFn({ method: 'POST' })
                   {
                     type: 'text',
                     text:
-                      'Write a short postcard story for these photos. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".',
+                      'Write the postcard story for these photos. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".',
                   },
                   ...data.images.map((url) => ({ type: 'image_url', image_url: { url } })),
                 ],
