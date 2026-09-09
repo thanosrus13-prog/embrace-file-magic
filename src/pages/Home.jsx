@@ -266,11 +266,11 @@ function App() {
         }
 
         const defaultNarratives = [
-          "I remember that day like it was yesterday. The light was perfect, the moment fleeting. I stood there, camera in hand, knowing I'd never recreate this exact feeling. Some memories are meant to be kept close.",
-          "There I was, exactly where I needed to be. The world seemed to pause just for me. I breathed it all in—the sounds, the smells, the warmth of that sun. This photo holds a piece of my soul.",
-          "I was traveling through, not sure where I belonged. Then I saw this view and knew. Sometimes the universe conspires to lead us to perfect moments. I grabbed my camera and captured a piece of forever.",
-          "That morning, I woke up with purpose. I walked until my feet ached, explored until my mind overflowed. This is what I came for—not the destination, but the feeling of being completely alive in that moment.",
-          "I found peace here. Away from the noise, away from everything familiar. Just me, my thoughts, and this incredible view. Some places change you. This one did."
+          "The light was perfect and the moment felt fleeting. I stood there, camera in hand, holding onto a memory.",
+          "The world seemed to pause just for me. I breathed it all in—the sounds, the smells, the warmth of that sun.",
+          "I saw this view and knew I'd found something special. I grabbed my camera and captured a piece of forever.",
+          "I walked until my feet ached and my mind overflowed. This is what I came for—the feeling of being alive.",
+          "I found peace here, away from everything familiar. Some places change you, and this one did."
         ]
 
         narrative = detected ? detected.narrative : defaultNarratives[Math.floor(Math.random() * defaultNarratives.length)]
