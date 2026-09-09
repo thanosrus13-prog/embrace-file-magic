@@ -544,7 +544,7 @@ export default function Transcribe() {
               { q: 'Can I edit the transcript?', a: 'Yes! Once the transcription is complete, you can copy the text and edit it however you like. You can also download it for your records.' },
               { q: 'Are my audio files secure?', a: 'Absolutely! Your audio files are sent directly to AssemblyAI for transcription and are never stored on our servers. We prioritize your privacy and data security.' },
               { q: 'Is there a limit on file size?', a: 'We support audio files up to 100MB. For longer recordings, you can split them into smaller files for better results.' },
-              { q: 'Do I need an API key?', a: 'For uploaded files, you need an AssemblyAI API key (free at assemblyai.com). Your key is stored locally in your browser and never shared. The "Record Live" mode is free and uses your browser\'s built-in speech recognition.' },
+              { q: 'Do I need an API key?', a: 'No. Transcription runs securely on our server, so you never handle or store an API key. The "Record Live" mode uses your browser\'s built-in speech recognition.' },
             ].map((faq, i) => (
               <FAQItem key={i} question={faq.q} answer={faq.a} />
             ))}
