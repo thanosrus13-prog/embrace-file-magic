@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSession } from '@/hooks/useSession'
 import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
-import { startTranscription, getTranscriptionStatus } from '@/lib/transcription.functions'
+import { createTranscriptionJob, getTranscriptionJob } from '@/lib/transcription-jobs.functions'
 
 export default function Transcribe() {
   const navigate = useNavigate()
@@ -80,16 +80,20 @@ export default function Transcribe() {
       return
     }
 
-    setTranscript('Transcribing...')
+    setTranscript('Queuing transcription job...')
 
     try {
-      const started = await startTranscription({ data: { audioUrl: storedAudioUrl } })
+      const job = await createTranscriptionJob({
+        data: { audioUrl: storedAudioUrl, storagePath: storedAudioPath },
+      })
 
-      if (!started?.id) {
-        setTranscript(started?.error || 'Could not start transcription.')
+      if (!job?.id || job.status === 'failed') {
+        setTranscript(job?.error || 'Could not start transcription.')
         setIsTranscribing(false)
         return
       }
+
+      setTranscript('Transcribing... (job ' + job.id.slice(0, 8) + ')')
 
       let attempts = 0
       const checkResult = async () => {
@@ -102,7 +106,7 @@ export default function Transcribe() {
 
         let result
         try {
-          result = await getTranscriptionStatus({ data: { id: started.id } })
+          result = await getTranscriptionJob({ data: { jobId: job.id } })
         } catch (pollError) {
           console.error('Polling failed:', pollError)
           setTranscript('Lost connection while transcribing. Please try again.')
@@ -111,6 +115,7 @@ export default function Transcribe() {
         }
 
         if (result.status === 'completed') {
+          // The job already saved the transcript server-side.
           const fullText = result.text || 'No speech detected'
           const words = fullText.split(' ')
           let currentIndex = 0
@@ -123,16 +128,14 @@ export default function Transcribe() {
             } else {
               setTranscript(fullText)
               setIsTranscribing(false)
-              saveTranscription('uploaded_file', fullText, storedAudioUrl, storedAudioPath)
             }
           }
           showNextWord()
-        } else if (result.status === 'error') {
+        } else if (result.status === 'failed') {
           setTranscript('Transcription failed: ' + (result.error || 'Unknown'))
           setIsTranscribing(false)
         } else {
-          setTranscript('Transcribing...')
-          setTimeout(checkResult, 1000)
+          setTimeout(checkResult, 1500)
         }
       }
 
@@ -143,6 +146,7 @@ export default function Transcribe() {
       setIsTranscribing(false)
     }
   }
+
   
   const stoppingRef = useRef(false)
   const finalTranscriptRef = useRef('')
