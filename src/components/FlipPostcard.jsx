@@ -503,15 +503,15 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
 
       {/* Left 70% - Narrative */}
       <div style={{ flex: 7, paddingRight: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '260px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+        <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '220px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
           {(() => {
-            if (narrative.length <= 350) return narrative
-            const truncated = narrative.slice(0, 350)
+            if (narrative.length <= 220) return narrative
+            const truncated = narrative.slice(0, 220)
             const lastPeriod = truncated.lastIndexOf('.')
             const lastExclaim = truncated.lastIndexOf('!')
             const lastQuestion = truncated.lastIndexOf('?')
             const lastPunctuation = Math.max(lastPeriod, lastExclaim, lastQuestion)
-            return lastPunctuation > 200 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
+            return lastPunctuation > 120 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
           })()}
         </p>
         <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
