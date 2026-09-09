@@ -141,10 +141,18 @@ export default function Transcribe() {
 
       checkResult()
     } catch (err) {
-      console.error('Error:', err)
-      setTranscript('Error processing audio.')
+      console.error('Transcription job error:', err)
+      const message = String(err?.message || err || '')
+      if (/unauthor|401|jwt|token/i.test(message)) {
+        setTranscript('Your session expired. Please sign in again and retry.')
+        setIsTranscribing(false)
+        goToAuth()
+        return
+      }
+      setTranscript('Could not process the audio: ' + (message || 'unknown error') + '. Please try again.')
       setIsTranscribing(false)
     }
+
   }
 
   
