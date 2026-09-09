@@ -501,48 +501,28 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
         <path d="M395,396 Q455,388 505,400 Q555,412 605,394" stroke="#c1336b" strokeWidth="68" fill="none" opacity="0.42" strokeLinecap="round"/>
       </svg>
 
-      {/* Left 70% - Narrative */}
-      <div style={{ flex: 7, paddingRight: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '220px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
-          {(() => {
-            if (narrative.length <= 220) return narrative
-            const truncated = narrative.slice(0, 220)
-            const lastPeriod = truncated.lastIndexOf('.')
-            const lastExclaim = truncated.lastIndexOf('!')
-            const lastQuestion = truncated.lastIndexOf('?')
-            const lastPunctuation = Math.max(lastPeriod, lastExclaim, lastQuestion)
-            return lastPunctuation > 120 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
-          })()}
-        </p>
-        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-          <button
-            onClick={(e) => { e.stopPropagation(); playAudio() }}
-            disabled={isRegenerating || isLoadingAudio}
-            className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
-            style={{ backgroundColor: isPlaying ? '#b45309' : '#7c3aed' }}
-          >
-            {isPlaying ? 'Stop' : 'Listen'}
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDownload()
-            }}
-            disabled={isDownloading}
-            className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer hover-ltr text-white"
-            style={{ backgroundColor: isDownloading ? '#047857' : '#059669' }}
-          >
-            {isDownloading ? 'Generating...' : 'Download Memoir'}
-          </button>
+      {/* Main content row: narrative + divider + stamp/address */}
+      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+        {/* Left 70% - Narrative */}
+        <div style={{ flex: 7, paddingRight: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <p style={{ fontFamily: '"Caveat", cursive', fontSize: '1.5rem', color: '#FFFFFF', lineHeight: '1.7', maxHeight: '280px', overflow: 'hidden', textAlign: 'left', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+            {(() => {
+              if (narrative.length <= 440) return narrative
+              const truncated = narrative.slice(0, 440)
+              const lastPeriod = truncated.lastIndexOf('.')
+              const lastExclaim = truncated.lastIndexOf('!')
+              const lastQuestion = truncated.lastIndexOf('?')
+              const lastPunctuation = Math.max(lastPeriod, lastExclaim, lastQuestion)
+              return lastPunctuation > 240 ? narrative.slice(0, lastPunctuation + 1) + '...' : truncated + '...'
+            })()}
+          </p>
         </div>
-      </div>
 
-      {/* Dividing Line */}
-      <div style={{ width: '3px', background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.5) 80%, transparent)', marginRight: '8px' }} />
+        {/* Dividing Line */}
+        <div style={{ width: '3px', background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.5) 20%, rgba(255,255,255,0.5) 80%, transparent)', marginRight: '8px' }} />
 
-      {/* Right 30% - Stamp & Address */}
-      <div style={{ flex: 3, paddingLeft: '16px', display: 'flex', flexDirection: 'column' }}>
+        {/* Right 30% - Stamp & Address */}
+        <div style={{ flex: 3, paddingLeft: '16px', display: 'flex', flexDirection: 'column' }}>
         {/* Stamp area with decorative frame */}
         <div 
           style={{
