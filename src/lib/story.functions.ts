@@ -38,14 +38,14 @@ export const generateStory = createServerFn({ method: 'POST' })
               {
                 role: 'system',
                 content:
-                  'You write short first-person postcard memories about a set of photos from one trip. You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one. Base the story ONLY on what is visibly in the photos: the places, objects, weather, people, colours, activities and mood. Name concrete details you can actually see in each photo. Never invent a famous landmark or city that is not clearly visible. Write 2-4 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. The story must be 240 characters or fewer.',
+                  'You write short first-person postcard memories about a set of photos from one trip. You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one. Base the story ONLY on what is visibly in the photos: the places, objects, weather, people, colours, activities and mood. Name concrete details you can actually see in each photo. Never invent a famous landmark or city that is not clearly visible. Write 2-4 warm, vivid sentences in past tense, no hashtags, no emoji, no preamble. The story must be between 220 and 240 characters long.',
               },
               {
                 role: 'user',
                 content: [
                   {
                     type: 'text',
-                    text: `Here are ${data.images.length} photos from the trip. Write one postcard story in 240 characters or less that mentions something visible from EVERY photo (photo 1 through photo ${data.images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`,
+                    text: `Here are ${data.images.length} photos from the trip. Write one postcard story between 220 and 240 characters that mentions something visible from EVERY photo (photo 1 through photo ${data.images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`,
                   },
                   ...data.images.flatMap((url, i) => [
                     { type: 'text', text: `Photo ${i + 1}:` },
@@ -83,7 +83,68 @@ export const generateStory = createServerFn({ method: 'POST' })
       const match = raw.match(/PLACE:\s*(.+)\s*$/i)
       const city = match?.[1]?.trim() || 'Unknown'
       let narrative = raw.replace(/PLACE:\s*.+\s*$/i, '').trim()
+
+      // Enforce the 220–240 character target. If the model missed the range,
+      // try once more with an explicit correction before giving up.
+      if (narrative.length < 220 || narrative.length > 240) {
+        const currentLength = narrative.length
+        const retryRes = await fetchWithRetry(
+          'https://ai.gateway.lovable.dev/v1/chat/completions',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash',
+              messages: [
+                {
+                  role: 'system',
+                  content:
+                    'You write short first-person postcard memories about a set of photos from one trip. Base the story ONLY on what is visibly in the photos. The story must be between 220 and 240 characters long.',
+                },
+                {
+                  role: 'user',
+                  content: `Here are ${data.images.length} photos from the trip. Write one postcard story between 220 and 240 characters that mentions something visible from every photo. Then on a final separate line write "PLACE: " followed by the specific place or city, or "PLACE: Unknown".`,
+                },
+                ...data.images.flatMap((url, i) => [
+                  { type: 'text', text: `Photo ${i + 1}:` },
+                  { type: 'image_url', image_url: { url } },
+                ]),
+                {
+                  role: 'user',
+                  content: `Your previous story was ${currentLength} characters. Please rewrite it to be between 220 and 240 characters. Keep the same warm, first-person past-tense style and reference details from every photo.`,
+                },
+              ],
+            }),
+          },
+          { retries: 1, timeoutMs: 60_000 },
+        )
+
+        if (retryRes.ok) {
+          const retryJson = (await retryRes.json()) as {
+            choices?: Array<{ message?: { content?: string } }>
+          }
+          const retryRaw = retryJson.choices?.[0]?.message?.content?.trim() ?? ''
+          if (retryRaw) {
+            const retryMatch = retryRaw.match(/PLACE:\s*(.+)\s*$/i)
+            const retryCity = retryMatch?.[1]?.trim() || city
+            const retryNarrative = retryRaw.replace(/PLACE:\s*.+\s*$/i, '').trim()
+            if (retryNarrative.length >= 220 && retryNarrative.length <= 240) {
+              return { narrative: retryNarrative, city: retryCity || 'Unknown', error: null }
+            }
+            // If the retry still missed, fall back to the closest valid length.
+            narrative = retryNarrative
+          }
+        }
+      }
+
       if (narrative.length > 240) narrative = narrative.slice(0, 237) + '...'
+      if (narrative.length < 220) {
+        return {
+          narrative: null,
+          city: null,
+          error: 'The generated story was too short. Please try again or upload clearer photos.',
+        }
+      }
 
       return { narrative, city: city || 'Unknown', error: null }
     } catch (err) {
