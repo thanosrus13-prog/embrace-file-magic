@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSession } from '@/hooks/useSession'
 import { saveTranscription, uploadAudioFile } from '../utils/saveTranscription'
+import { startTranscription, getTranscriptionStatus } from '@/lib/transcription.functions'
 
 export default function Transcribe() {
   const navigate = useNavigate()
