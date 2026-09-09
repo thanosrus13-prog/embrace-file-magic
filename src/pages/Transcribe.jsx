@@ -96,7 +96,6 @@ export default function Transcribe() {
       setTranscript('Transcribing... (job ' + job.id.slice(0, 8) + ')')
 
       let attempts = 0
-      let pollErrors = 0
       const checkResult = async () => {
         attempts++
         if (attempts > 600) {
@@ -108,20 +107,12 @@ export default function Transcribe() {
         let result
         try {
           result = await getTranscriptionJob({ data: { jobId: job.id } })
-          pollErrors = 0
         } catch (pollError) {
           console.error('Polling failed:', pollError)
-          pollErrors++
-          // Tolerate a few transient failures before giving up on the job.
-          if (pollErrors < 5) {
-            setTimeout(checkResult, 3000)
-            return
-          }
-          setTranscript('Lost connection while transcribing. The job keeps running — check your profile shortly.')
+          setTranscript('Lost connection while transcribing. Please try again.')
           setIsTranscribing(false)
           return
         }
-
 
         if (result.status === 'completed') {
           // The job already saved the transcript server-side.
@@ -150,18 +141,10 @@ export default function Transcribe() {
 
       checkResult()
     } catch (err) {
-      console.error('Transcription job error:', err)
-      const message = String(err?.message || err || '')
-      if (/unauthor|401|jwt|token/i.test(message)) {
-        setTranscript('Your session expired. Please sign in again and retry.')
-        setIsTranscribing(false)
-        goToAuth()
-        return
-      }
-      setTranscript('Could not process the audio: ' + (message || 'unknown error') + '. Please try again.')
+      console.error('Error:', err)
+      setTranscript('Error processing audio.')
       setIsTranscribing(false)
     }
-
   }
 
   
