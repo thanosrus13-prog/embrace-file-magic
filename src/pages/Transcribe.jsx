@@ -264,7 +264,7 @@ export default function Transcribe() {
           className="ml-4 px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
           style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
         >
-          <span className="relative z-10">VibePost</span>
+          <span className="relative z-10">PostScript</span>
         </button>
         <div className="flex-1"></div>
         {user ? (
