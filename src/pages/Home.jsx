@@ -78,16 +78,25 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const MAX_IMAGES = 4
+
   const addFiles = (files) => {
     const imageFiles = Array.from(files).filter((f) => f.type.startsWith('image/'))
     if (!imageFiles.length) return
+    setStoryError('')
     const newImages = imageFiles.map((file) => ({
       id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       file,
       url: URL.createObjectURL(file),
       name: file.name,
     }))
-    setImages((prev) => [...prev, ...newImages])
+    setImages((prev) => {
+      const next = [...prev, ...newImages]
+      if (next.length > MAX_IMAGES) {
+        setStoryError(`Maximum ${MAX_IMAGES} upload images. Remove ${next.length - MAX_IMAGES} to continue.`)
+      }
+      return next
+    })
   }
 
   const onDrop = useCallback((e) => {
@@ -231,6 +240,12 @@ function App() {
       })
 
     setStoryError('')
+
+    if (images.length > MAX_IMAGES) {
+      setStoryError(`Maximum ${MAX_IMAGES} images allowed. Please remove ${images.length - MAX_IMAGES} before processing.`)
+      return
+    }
+
     setBusy(true)
 
     try {
@@ -453,19 +468,24 @@ function App() {
 
       {/* Thumbnail preview */}
       {images.length > 0 && (
-        <div className="w-full max-w-md mt-6 grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {images.map((img) => (
-            <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-square bg-gray-800">
-              <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
-              <button
-                onClick={() => removeImage(img.id)}
-                className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label={`Remove ${img.name}`}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+        <div className="w-full max-w-md mt-6 flex flex-col items-center gap-2">
+          <p className="text-xs" style={{ color: images.length > MAX_IMAGES ? '#ec5144' : '#c0bec6' }}>
+            {images.length}/{MAX_IMAGES} images
+          </p>
+          <div className="w-full grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {images.map((img) => (
+              <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-square bg-gray-800">
+                <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                <button
+                  onClick={() => removeImage(img.id)}
+                  className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label={`Remove ${img.name}`}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -474,12 +494,17 @@ function App() {
         <div className="w-full max-w-sm mt-16 flex flex-col items-center gap-3">
           <button
             onClick={processImages}
-            disabled={busy}
+            disabled={busy || images.length > MAX_IMAGES}
             className="w-full px-8 py-3 rounded-xl text-2xl font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
             style={{ backgroundColor: 'black' }}
           >
             <span className="relative z-10">{busy ? 'Reading your photos...' : 'Process Images'}</span>
           </button>
+          {images.length > MAX_IMAGES && (
+            <p className="text-sm text-center font-medium" style={{ color: '#ec5144' }}>
+              Maximum {MAX_IMAGES} upload images. Remove {images.length - MAX_IMAGES} to continue.
+            </p>
+          )}
           {storyError && (
             <p className="text-sm text-center" style={{ color: '#c0bec6' }}>{storyError}</p>
           )}
