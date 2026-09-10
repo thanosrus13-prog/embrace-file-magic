@@ -28,7 +28,7 @@ export default function Profile() {
     setHistoryLoading(true)
     const { data, error } = await supabase
       .from('transcriptions')
-      .select('id, transcription_type, text_content, audio_url, storage_path, created_at')
+      .select('id, transcription_type, text_content, audio_url, storage_path, storage_provider, created_at')
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (error) console.error('Failed to load transcriptions:', error.message)
@@ -50,8 +50,20 @@ export default function Profile() {
       .is('deleted_at', null)
     if (error) { console.error('Failed to delete transcription:', error.message); return }
     if (item?.storage_path) {
-      const { error: storageError } = await supabase.storage.from('audio_files').remove([item.storage_path])
-      if (storageError) console.error('Failed to delete audio file:', storageError.message)
+      const provider = item.storage_provider ?? 'supabase'
+      if (provider === 's3') {
+        // S3 deletion is handled server-side via the API DELETE endpoint.
+        // The client soft-deletes the row; the API route handles storage cleanup.
+        // For client-initiated deletes, call the API to clean up S3 objects.
+        try {
+          await fetch(`/api/transcriptions/${id}`, { method: 'DELETE' })
+        } catch (e) {
+          console.error('Failed to delete S3 audio file:', e)
+        }
+      } else {
+        const { error: storageError } = await supabase.storage.from('audio_files').remove([item.storage_path])
+        if (storageError) console.error('Failed to delete audio file:', storageError.message)
+      }
     }
     clearCachedHistory(user?.id)
     setHistory(prev => {

@@ -74,7 +74,7 @@ export const Route = createFileRoute('/api/transcriptions/$id')({
           .eq('id', parsed.data.id)
           .eq('user_id', auth.userId)
           .is('deleted_at', null)
-          .select('id, storage_path')
+          .select('id, storage_path, storage_provider')
 
         if (error) return jsonError(500, 'Failed to delete transcription')
         if (!data || data.length === 0) return jsonError(404, 'Transcription not found')
@@ -83,11 +83,30 @@ export const Route = createFileRoute('/api/transcriptions/$id')({
         cacheInvalidatePrefix(`transcriptions:${auth.userId}:`)
 
         const storagePath = data[0]?.storage_path
+        const storageProvider = data[0]?.storage_provider ?? 'supabase'
         if (storagePath) {
-          const { error: storageError } = await auth.supabase.storage
-            .from('audio_files')
-            .remove([storagePath])
-          if (storageError) console.error('Failed to delete audio file:', storageError.message)
+          if (storageProvider === 's3') {
+            // Delete from AWS S3 via the gateway.
+            const LOVABLE_API_KEY = process.env['LOVABLE_API_KEY']
+            const AWS_S3_API_KEY = process.env['AWS_S3_API_KEY']
+            if (LOVABLE_API_KEY && AWS_S3_API_KEY) {
+              const delRes = await fetch(
+                `https://connector-gateway.lovable.dev/aws_s3/${encodeURIComponent(storagePath)}`,
+                { method: 'DELETE', headers: {
+                  'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+                  'X-Connection-Api-Key': AWS_S3_API_KEY,
+                } },
+              )
+              if (!delRes.ok && delRes.status !== 404) {
+                console.error('Failed to delete S3 object:', delRes.status, await delRes.text().catch(() => ''))
+              }
+            }
+          } else {
+            const { error: storageError } = await auth.supabase.storage
+              .from('audio_files')
+              .remove([storagePath])
+            if (storageError) console.error('Failed to delete audio file:', storageError.message)
+          }
         }
 
         return new Response(null, { status: 204, headers: limited.headers })
