@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateMemoirPDF } from '../utils/pdfGenerator'
 import { synthesizeSpeech } from '@/lib/tts.functions'
