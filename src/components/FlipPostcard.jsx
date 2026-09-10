@@ -368,11 +368,36 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
   // Front side - Image with glossy overlay
   const FrontCard = () => (
     <div style={{ width: '600px', height: '400px', position: 'relative', borderRadius: '4px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
-      <img 
-        src={image.url} 
-        alt={image.name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      <img
+        src={artUrl || image.url}
+        alt={artUrl ? 'Illustrated artwork of your trip' : image.name}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          filter: !artUrl && isLoadingArt ? 'blur(8px) saturate(1.2)' : 'none',
+          transition: 'filter 0.6s ease',
+        }}
       />
+      {!artUrl && isLoadingArt && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.35)',
+            color: 'white',
+            fontSize: '14px',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Painting your postcard...
+        </div>
+      )}
+
       {/* Glossy overlay */}
       <div 
         style={{
