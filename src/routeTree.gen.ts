@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
+import { Route as VibepostRouteImport } from './routes/vibepost'
 import { Route as ApiPostcardArtRouteImport } from './routes/api/postcard-art'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicTranscriptionWebhookRouteImport } from './routes/api/public/transcription-webhook'
@@ -51,6 +52,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const TranscribeRoute = TranscribeRouteImport.update({
   id: '/transcribe',
   path: '/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VibepostRoute = VibepostRouteImport.update({
+  id: '/vibepost',
+  path: '/vibepost',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPostcardArtRoute = ApiPostcardArtRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
+  '/vibepost': typeof VibepostRoute
   '/api/postcard-art': typeof ApiPostcardArtRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
+  '/vibepost': typeof VibepostRoute
   '/api/postcard-art': typeof ApiPostcardArtRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
+  '/vibepost': typeof VibepostRoute
   '/api/postcard-art': typeof ApiPostcardArtRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/transcribe'
+    | '/vibepost'
     | '/api/postcard-art'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/transcribe'
+    | '/vibepost'
     | '/api/postcard-art'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/transcribe'
+    | '/vibepost'
     | '/api/postcard-art'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
@@ -193,6 +205,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TranscribeRoute: typeof TranscribeRoute
+  VibepostRoute: typeof VibepostRoute
   ApiPostcardArtRoute: typeof ApiPostcardArtRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
   ApiPublicTranscriptionWebhookRoute: typeof ApiPublicTranscriptionWebhookRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       path: '/transcribe'
       fullPath: '/transcribe'
       preLoaderRoute: typeof TranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vibepost': {
+      id: '/vibepost'
+      path: '/vibepost'
+      fullPath: '/vibepost'
+      preLoaderRoute: typeof VibepostRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/postcard-art': {
@@ -305,6 +325,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TranscribeRoute: TranscribeRoute,
+  VibepostRoute: VibepostRoute,
   ApiPostcardArtRoute: ApiPostcardArtRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
   ApiPublicTranscriptionWebhookRoute: ApiPublicTranscriptionWebhookRoute,
