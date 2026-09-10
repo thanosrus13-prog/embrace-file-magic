@@ -275,7 +275,7 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
     let newStory = null
     try {
       const sourceImages = imagesArray.length > 0 ? imagesArray : [image]
-      const payload = (await Promise.all(sourceImages.slice(0, 6).map((img) => toDataUrl(img.url)))).filter(Boolean)
+      const payload = (await Promise.all(sourceImages.slice(0, 4).map((img) => toDataUrl(img.url)))).filter(Boolean)
       if (payload.length) {
         const result = await regenerateStory({ data: { images: payload, style: style.id } })
         if (result?.narrative) newStory = capStoryLength(result.narrative)
