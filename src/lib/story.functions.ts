@@ -125,10 +125,31 @@ async function writeStoryFromPhotos(
   }
   if (!first.narrative) return { narrative: null, city: null, error: 'No story was generated.' }
 
-  // Single model call for speed: trim to the 240-character cap at a
-  // sentence/word boundary instead of asking the model to rewrite.
-  const narrative = capAt240(first.narrative)
+  let narrative = first.narrative
   const city = first.city || 'Unknown'
+
+  // If the model missed the 220–240 range, retry once with an explicit correction.
+  if (narrative.length < 220 || narrative.length > 240) {
+    const retry = await callModel(
+      `Your previous story was ${narrative.length} characters. Please rewrite it to be between 220 and 240 characters, keeping the same style and grounding it in details visible in every photo.`,
+      1
+    )
+    if (retry.narrative) {
+      if (retry.narrative.length >= 220 && retry.narrative.length <= 240) {
+        return { narrative: retry.narrative, city: retry.city || city, error: null }
+      }
+      narrative = retry.narrative
+    }
+  }
+
+  narrative = capAt240(narrative)
+  if (narrative.length < 220) {
+    return {
+      narrative: null,
+      city: null,
+      error: 'The generated story was too short. Please try again or upload clearer photos.',
+    }
+  }
 
   return { narrative, city, error: null }
 }
