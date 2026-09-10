@@ -21,7 +21,7 @@ const STYLE_PROMPTS: Record<string, string> = {
 }
 
 const BASE_RULES =
-  'Base the story ONLY on what is visibly in the photos: the places, objects, weather, people, colours, activities and mood. Name concrete details you can actually see in EACH photo. Never invent a famous landmark or city that is not clearly visible. Write 2-4 sentences in past tense, first person, no hashtags, no emoji, no preamble. The story MUST be between 220 and 240 characters long.'
+  'The photos are the source of truth. Base every event and detail ONLY on what is visibly present: places, objects, weather, people, colours, activities and mood. Mention at least one concrete visible detail from EACH numbered photo. Style may change the emotional wording, but must NEVER add events such as delays, missed flights, lost bags, rain or other trouble unless they are visibly supported by a photo. Never invent a landmark or city. Write in past tense, first person, with no hashtags, emoji or preamble. The story text MUST contain at most 240 JavaScript characters.'
 
 function validateImages(input: StoryInput) {
   const images = Array.isArray(input?.images) ? input.images : []
@@ -40,8 +40,9 @@ function validateImages(input: StoryInput) {
 // complete sentence that fits, else the last word boundary (never mid-word,
 // never an ellipsis).
 function capAt240(narrative: string): string {
-  if (narrative.length <= 240) return narrative
-  const withinLimit = narrative.slice(0, 240)
+  const clean = narrative.replace(/\s+/g, ' ').trim()
+  if (clean.length <= 240) return clean
+  const withinLimit = clean.slice(0, 240)
   const lastSentenceEnd = Math.max(
     withinLimit.lastIndexOf('. '),
     withinLimit.lastIndexOf('! '),
@@ -65,12 +66,12 @@ async function writeStoryFromPhotos(
 
   const styleRule = styleId && STYLE_PROMPTS[styleId] ? STYLE_PROMPTS[styleId] : null
   const systemPrompt = styleRule
-    ? `You write short postcard memories about a set of photos from one trip. ${styleRule} ${BASE_RULES} You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one.`
-    : `You write short first-person postcard memories about a set of photos from one trip. You are given several numbered photos and you MUST weave details from EVERY photo into the story — do not describe only the first one. Write warm, vivid sentences. ${BASE_RULES}`
+    ? `You write short postcard memories about a set of photos from one trip. ${styleRule} ${BASE_RULES} Describe the numbered photos in order so every uploaded photo affects the result. Photo evidence is more important than style.`
+    : `You write short first-person postcard memories about a set of photos from one trip. Describe the numbered photos in order so every uploaded photo affects the result. Write warm, vivid sentences. ${BASE_RULES}`
 
   const userText = styleRule
-    ? `Here are ${images.length} photos from the trip. Write one postcard story between 220 and 240 characters about what is visible in these photos, told in the requested style, mentioning something visible from EVERY photo (photo 1 through photo ${images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`
-    : `Here are ${images.length} photos from the trip. Write one postcard story between 220 and 240 characters that mentions something visible from EVERY photo (photo 1 through photo ${images.length}), not just the first. Then, on a final separate line, write "PLACE: " followed by the specific place or city if you can clearly identify it from the photos, otherwise "PLACE: Unknown".`
+    ? `Inspect all ${images.length} numbered photos. Write one story of 220–240 characters total in the requested tone. Include a specific visible detail from every photo and invent nothing. The style changes only the emotion, never the facts. Then add a separate PLACE line.`
+    : `Inspect all ${images.length} numbered photos. Write one story of 220–240 characters total. Include a specific visible detail from every photo and invent nothing. Then add a separate PLACE line.`
 
   const buildMessages = (correction?: string) => [
     { role: 'system', content: systemPrompt },
@@ -93,7 +94,7 @@ async function writeStoryFromPhotos(
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'google/gemini-2.5-flash', messages: buildMessages(correction) }),
+        body: JSON.stringify({ model: 'google/gemini-3.8-flash', messages: buildMessages(correction) }),
       },
       { retries, timeoutMs: 60_000 }
     )
