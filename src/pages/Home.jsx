@@ -241,7 +241,7 @@ function App() {
       let narrative = null
       let city = 'Unknown'
 
-      const payload = (await Promise.all(images.slice(0, 6).map((img) => toDataUrl(img.url)))).filter(Boolean)
+      const payload = (await Promise.all(images.slice(0, 4).map((img) => toDataUrl(img.url)))).filter(Boolean)
 
       if (payload.length) {
         try {

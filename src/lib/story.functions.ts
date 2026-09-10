@@ -26,7 +26,7 @@ const BASE_RULES =
 function validateImages(input: StoryInput) {
   const images = Array.isArray(input?.images) ? input.images : []
   if (!images.length) throw new Error('At least one image is required')
-  if (images.length > 6) throw new Error('Too many images (max 6)')
+  if (images.length > 4) throw new Error('Too many images (max 4)')
   for (const img of images) {
     if (typeof img !== 'string' || !img.startsWith('data:image/')) {
       throw new Error('Images must be data URLs')
