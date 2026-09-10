@@ -67,10 +67,12 @@ export default function Transcribe() {
 
     let storedAudioUrl = null
     let storedAudioPath = null
+    let storedAudioProvider = 'supabase'
     try {
       const uploaded = await uploadAudioFile(audioFile)
       storedAudioUrl = uploaded.url
       storedAudioPath = uploaded.path
+      storedAudioProvider = uploaded.provider || 'supabase'
     } catch (e) {
       console.error('Audio storage upload failed:', e)
     }
@@ -85,7 +87,7 @@ export default function Transcribe() {
 
     try {
       const job = await createTranscriptionJob({
-        data: { audioUrl: storedAudioUrl, storagePath: storedAudioPath },
+        data: { audioUrl: storedAudioUrl, storagePath: storedAudioPath, storageProvider: storedAudioProvider },
       })
 
       if (!job?.id || job.status === 'failed') {

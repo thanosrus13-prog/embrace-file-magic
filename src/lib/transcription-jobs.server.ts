@@ -32,6 +32,7 @@ type JobRow = {
   status: JobStatus
   audio_url: string
   storage_path: string | null
+  storage_provider: string | null
   provider_job_id: string | null
   webhook_token: string
   transcription_id: string | null
@@ -56,6 +57,7 @@ export async function createJob(opts: {
   userId: string
   audioUrl: string
   storagePath?: string | null
+  storageProvider?: string | null
   origin: string
 }): Promise<{ id: string | null; status: JobStatus; error: string | null }> {
   const { fetchWithRetry, enforceRateLimit, requireEnv, ProxyError } = await import('./ai-proxy.server')
@@ -70,6 +72,7 @@ export async function createJob(opts: {
         user_id: opts.userId,
         audio_url: opts.audioUrl,
         storage_path: opts.storagePath ?? null,
+        storage_provider: opts.storageProvider ?? 'supabase',
         status: 'queued',
       })
       .select('id, webhook_token')
@@ -147,6 +150,7 @@ async function completeJob(job: JobRow, text: string): Promise<JobView> {
       text_content: text,
       audio_url: job.audio_url,
       storage_path: job.storage_path,
+      storage_provider: job.storage_provider ?? 'supabase',
     })
     .select('id')
     .single()
