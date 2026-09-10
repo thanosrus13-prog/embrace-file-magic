@@ -544,14 +544,15 @@ export default function Transcribe() {
           <h2 className="text-2xl font-bold text-center text-white mb-8">Common Questions</h2>
           <div className="space-y-3">
             {[
-              { q: 'What exactly is Transcribe?', a: 'Transcribe uses AssemblyAI to convert your audio files into accurate text transcripts. Simply upload your audio or record live, and our AI-powered transcription will convert it to text.' },
-              { q: 'What audio formats do you support?', a: 'We support all common audio formats including MP3, WAV, M4A, AAC, and more. Just drag and drop your file or click to upload.' },
-              { q: 'How accurate is the transcription?', a: 'AssemblyAI provides state-of-the-art speech recognition with 95%+ accuracy on clear audio recordings.' },
-              { q: 'How long does transcription take?', a: 'Transcription typically takes just a few seconds to a minute depending on the length of your audio file. Most files are processed in under 10 seconds.' },
-              { q: 'Can I edit the transcript?', a: 'Yes! Once the transcription is complete, you can copy the text and edit it however you like. You can also download it for your records.' },
-              { q: 'Are my audio files secure?', a: 'Absolutely! Your audio files are sent directly to AssemblyAI for transcription and are never stored on our servers. We prioritize your privacy and data security.' },
-              { q: 'Is there a limit on file size?', a: 'We support audio files up to 100MB. For longer recordings, you can split them into smaller files for better results.' },
-              { q: 'Do I need an API key?', a: 'No. Transcription runs securely on our server, so you never handle or store an API key. The "Record Live" mode uses your browser\'s built-in speech recognition.' },
+              { q: 'What is PostScript?', a: 'PostScript turns audio into text. Upload a recording or capture live audio from your mic, and our server-side AI transcribes it into an accurate, searchable transcript you can revisit anytime.' },
+              { q: 'What audio formats can I upload?', a: 'We support common formats including MP3, WAV, M4A, and AAC. Drag and drop your file or click to browse — one file at a time.' },
+              { q: 'How accurate is the transcription?', a: 'Uploaded files are transcribed with AssemblyAI, which delivers high accuracy on clear recordings. Live recording uses your browser\'s built-in speech recognition for real-time captions.' },
+              { q: 'How long does transcription take?', a: 'Uploaded files are queued and processed asynchronously, so you\'ll see a "Transcribing..." status until the job finishes — usually a few seconds to a couple of minutes depending on length. Live recording transcribes as you speak.' },
+              { q: 'Can I edit or copy my transcript?', a: 'Yes. Once transcription completes, select and copy the text, or open it from your history on the profile page. Each transcript is saved with its original audio so you can replay it.' },
+              { q: 'Are my audio files and transcripts private?', a: 'Yes. Files are stored in your own private storage bucket, and every transcript is protected by Row Level Security — only you can read or delete your own recordings.' },
+              { q: 'Is there a file size limit?', a: 'We accept most everyday recordings. For very long audio, splitting it into shorter files gives faster, more reliable results.' },
+              { q: 'Do I need an API key?', a: 'No. Transcription runs securely on our servers, so you never handle or see an API key. Live recording uses your browser\'s built-in speech recognition.' },
+              { q: 'Can I delete a recording?', a: 'Yes. From your profile, delete any transcript and its stored audio file is removed at the same time — nothing is left behind.' },
             ].map((faq, i) => (
               <FAQItem key={i} question={faq.q} answer={faq.a} />
             ))}
