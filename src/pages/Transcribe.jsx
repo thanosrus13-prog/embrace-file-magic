@@ -8,7 +8,7 @@ import { clearCachedHistory } from '@/lib/history-cache'
 export default function Transcribe() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useSession()
-  const goToAuth = () => navigate({ to: '/auth', search: { redirect: '/transcribe' } })
+  const goToAuth = () => navigate({ to: '/auth', search: { redirect: '/' } })
   const [scrollRotation, setScrollRotation] = useState(0)
   const [audioFile, setAudioFile] = useState(null)
   const [transcript, setTranscript] = useState('')
@@ -260,11 +260,11 @@ export default function Transcribe() {
           <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'DM Sans, sans-serif', background: 'linear-gradient(90deg, #c1336b, #ec5144)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>VibePost</h1>
         </button>
         <button
-          data-href="/transcribe"
+          data-href="/vibepost"
           className="ml-4 px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
           style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
         >
-          <span className="relative z-10">Transcribe</span>
+          <span className="relative z-10">VibePost</span>
         </button>
         <div className="flex-1"></div>
         {user ? (
