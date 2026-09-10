@@ -138,7 +138,45 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
   const [currentVoice, setCurrentVoice] = useState({ voiceId: 'pNInz6obpgDQGcFmaJgB', settings: { stability: 0.2, style_exaggeration: 0.9 } })
   const [savedPosition, setSavedPosition] = useState(0)
   const [currentText, setCurrentText] = useState('')
+  const [artUrl, setArtUrl] = useState(null)
+  const [isLoadingArt, setIsLoadingArt] = useState(true)
   const audioRef = useRef(null)
+
+  // Turn the uploaded photos into one illustrated, animated-style artwork for
+  // the front of the postcard. Falls back to the original photo if it fails.
+  useEffect(() => {
+    let cancelled = false
+    const sourceImages = imagesArray.length > 0 ? imagesArray : image ? [image] : []
+    if (!sourceImages.length) {
+      setIsLoadingArt(false)
+      return
+    }
+    setIsLoadingArt(true)
+    ;(async () => {
+      try {
+        const payload = (
+          await Promise.all(sourceImages.slice(0, 4).map((img) => toDataUrl(img.url)))
+        ).filter(Boolean)
+        if (!payload.length) throw new Error('No usable photos')
+        const res = await fetch('/api/postcard-art', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: payload, narrative: initialNarrative }),
+        })
+        const json = await res.json().catch(() => ({}))
+        if (!cancelled && json?.image) setArtUrl(json.image)
+      } catch (err) {
+        console.error('Postcard artwork failed:', err)
+      } finally {
+        if (!cancelled) setIsLoadingArt(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [image?.url, imagesArray.length])
+
 
   const stopAudio = () => {
     console.log('Stopping audio...')
