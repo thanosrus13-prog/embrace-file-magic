@@ -75,7 +75,7 @@ async function uploadToSupabase(file, userId) {
 
 // Saves a finished transcription for the signed-in user.
 // type: 'live' | 'uploaded_file'
-export async function saveTranscription(type, text, audioUrl = null, storagePath = null) {
+export async function saveTranscription(type, text, audioUrl = null, storagePath = null, storageProvider = 'supabase') {
   const content = (text || '').trim()
   if (!content) return { error: 'empty' }
 
@@ -87,6 +87,7 @@ export async function saveTranscription(type, text, audioUrl = null, storagePath
     transcription_type: type,
     text_content: content,
     audio_url: audioUrl,
+    storage_provider: storageProvider,
   }
   if (storagePath) insert.storage_path = storagePath
 
