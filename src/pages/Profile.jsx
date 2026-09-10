@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { useSession, signOut } from '@/hooks/useSession'
 import { getCachedHistory, setCachedHistory, clearCachedHistory } from '@/lib/history-cache'
+import { deleteS3Object } from '@/lib/s3-storage.functions'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -52,11 +53,8 @@ export default function Profile() {
     if (item?.storage_path) {
       const provider = item.storage_provider ?? 'supabase'
       if (provider === 's3') {
-        // S3 deletion is handled server-side via the API DELETE endpoint.
-        // The client soft-deletes the row; the API route handles storage cleanup.
-        // For client-initiated deletes, call the API to clean up S3 objects.
         try {
-          await fetch(`/api/transcriptions/${id}`, { method: 'DELETE' })
+          await deleteS3Object({ data: { objectKey: item.storage_path } })
         } catch (e) {
           console.error('Failed to delete S3 audio file:', e)
         }
