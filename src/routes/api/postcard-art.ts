@@ -37,7 +37,7 @@ export const Route = createFileRoute('/api/postcard-art')({
           method: 'POST',
           headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'google/gemini-3-pro-image',
+            model: 'google/gemini-3.1-flash-image',
             messages: [{ role: 'user', content }],
             modalities: ['image', 'text'],
           }),
