@@ -155,7 +155,7 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
     ;(async () => {
       try {
         const payload = (
-          await Promise.all(sourceImages.slice(0, 4).map((img) => toDataUrl(img.url)))
+          await Promise.all(sourceImages.slice(0, 4).map((img) => toDataUrl(img.url, 448)))
         ).filter(Boolean)
         if (!payload.length) throw new Error('No usable photos')
         const res = await fetch('/api/postcard-art', {
