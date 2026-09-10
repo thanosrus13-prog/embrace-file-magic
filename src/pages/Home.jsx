@@ -314,7 +314,7 @@ function App() {
             className="h-12 w-auto"
             style={{ transform: `rotate(${scrollRotation}deg)` }}
           />
-          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'DM Sans, sans-serif', background: 'linear-gradient(90deg, #c1336b, #ec5144)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>VibePost</h1>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'DM Sans, sans-serif', background: 'linear-gradient(90deg, #c1336b, #ec5144)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>PostScript</h1>
         </button>
         <NavButton href="/">Transcribe</NavButton>
         <div className="flex-1"></div>
