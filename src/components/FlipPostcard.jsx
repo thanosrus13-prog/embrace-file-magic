@@ -65,8 +65,8 @@ const rewriteStory = (originalStory, styleId, city) => {
     // Joyful: High-energy language and exclamation points
     joyful: `OH WOW! What an absolutely incredible adventure we had in ${location}! ${originalStory.replace(/\./g, '!').replace(/^I /, 'I ')} Every single moment was absolutely magical and I cherished every second! Can't wait to go back!`,
     
-    // Stressful: Focus on travel chaos (missed flights, rain, lost bags)
-    stressful: `Okay so NOT everything went to plan in ${location}. First, it rained the ENTIRE first day. Then I missed my connecting flight because of delays. My bag got lost for TWO DAYS and I had to buy emergency clothes. ${originalStory.replace(/^I /, 'And of course, ').toLowerCase()} But hey, I survived!`,
+    // Stressful: heighten the pace without inventing events outside the photos.
+    stressful: `Everything felt urgent in ${location}; I rushed through each moment, trying to take it all in. ${originalStory.replace(/^I /, '').replace(/\s+/g, ' ').trim()}`,
     
     // Nat Geo: Sophisticated, scientific observer
     natgeo: `Field observations from ${location}: The subject exhibited signs of profound cultural immersion during the expedition. Notable behavioral patterns include extended periods of contemplation and documented instances of awe. ${originalStory.replace(/^I /, 'The observer ').toLowerCase()} A fascinating specimen of the modern wanderer, adapting to foreign environments with remarkable resilience.`,
@@ -278,12 +278,15 @@ export default function FlipPostcard({ image, narrative: initialNarrative, city 
       const payload = (await Promise.all(sourceImages.slice(0, 6).map((img) => toDataUrl(img.url)))).filter(Boolean)
       if (payload.length) {
         const result = await regenerateStory({ data: { images: payload, style: style.id } })
-        if (result?.narrative) newStory = result.narrative
+        if (result?.narrative) newStory = capStoryLength(result.narrative)
       }
     } catch (err) {
       console.warn('AI style regeneration failed, using local rewrite:', err)
     }
-    if (!newStory) newStory = rewriteStory(initialNarrative, style.id, city)
+    // A failed vision request must never replace photo-grounded content with
+    // invented travel events. The fallback only restyles the original story.
+    if (!newStory) newStory = rewriteStory(narrative || initialNarrative, style.id, city)
+    newStory = capStoryLength(newStory).slice(0, 240)
     setNarrative(newStory)
     console.log('Style selected:', style.label, 'Voice ID:', style.voiceId, 'Settings:', style.settings)
     setShowBubbles(false)
