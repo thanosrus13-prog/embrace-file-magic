@@ -11,7 +11,11 @@ export async function uploadAudioFile(file) {
   if (!user) return { url: null, error: 'not signed in' }
 
   if (file.size <= S3_SIZE_LIMIT) {
-    return uploadToS3(file)
+    const s3 = await uploadToS3(file)
+    if (s3.url) return s3
+    // S3 unavailable (e.g. bucket CORS not configured yet) — fall back to Supabase.
+    console.warn('S3 upload unavailable, falling back to Supabase Storage:', s3.error)
+    return uploadToSupabase(file, user.id)
   }
   return uploadToSupabase(file, user.id)
 }
