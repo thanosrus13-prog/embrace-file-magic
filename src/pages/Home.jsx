@@ -245,6 +245,12 @@ function App() {
       })
 
     setStoryError('')
+
+    if (images.length > MAX_IMAGES) {
+      setStoryError(`Maximum ${MAX_IMAGES} images allowed. Please remove ${images.length - MAX_IMAGES} before processing.`)
+      return
+    }
+
     setBusy(true)
 
     try {
