@@ -541,13 +541,14 @@ function App() {
         <h2 className="text-2xl font-bold text-center text-white mb-8">Common Questions</h2>
         <div className="space-y-3">
           {[
-            { q: 'What exactly is VibePost?', a: 'VibePost transforms your travel photos into personalized magazine-style postcards with AI-generated stories that capture the mood and memory of your journey.' },
-            { q: 'How does the AI "read" my photos?', a: 'Our AI analyzes the filename and image content to detect landmarks and locations, then generates a unique narrative that matches the vibe of your photo.' },
-            { q: 'What if I don\'t like the first story the AI writes?', a: 'No problem! Click "Regenerate Story" and choose from 6 different styles - Cinematic, Vintage Nostalgia, Holiday Blues, Joyful, Stressful, or National Geographic.' },
-            { q: 'Can I share my postcards on social media?', a: 'Absolutely! Download your memoir as a PDF or take a screenshot of your postcard to share on Instagram, Facebook, or any platform you like.' },
-            { q: 'How long does the transformation take?', a: 'It only takes a few seconds! Upload your photos, click "Process Images," and your personalized postcards are ready instantly.' },
-            { q: 'Are my photos safe?', a: 'Yes! Your photos are processed locally in your browser and are never uploaded to our servers. We respect your privacy.' },
-            { q: 'What file types do you support?', a: 'We support all common image formats including JPG, PNG, HEIC, and WebP. Just drag and drop your photos or click to upload.' },
+            { q: 'What is VibePost?', a: 'VibePost turns your photos into a flip-postcard memoir. Upload up to four photos and our AI writes a short, vivid story about what\'s actually in them, then paints an illustrated postcard front inspired by those same images.' },
+            { q: 'How does the AI "read" my photos?', a: 'Your photos are sent to a vision model that looks at every uploaded image and writes a grounded narrative about the real people, places, and details it sees — it doesn\'t just guess from filenames.' },
+            { q: 'How many photos can I use?', a: 'Up to four per postcard. If you add more, you\'ll see a prompt to remove the extras before you can process them.' },
+            { q: 'What if I don\'t like the first story?', a: 'Tap "Regenerate Story" and pick a style — Cinematic, Vintage Nostalgia, Holiday Blues, Joyful, Stressful, or National Geographic. Each rewrite stays grounded in your photos and fits within a tight character limit.' },
+            { q: 'How long does it take?', a: 'Usually a few seconds. Generating the story and painting the postcard front each take a moment, so you\'ll see a loading state until both are ready.' },
+            { q: 'Can I listen to or save my memoir?', a: 'Yes. Use "Listen Memoir" to hear the story read aloud, or "Download Memoir" to keep a copy of your postcard.' },
+            { q: 'Are my photos private?', a: 'Photos are processed to generate your story and postcard art, and aren\'t shared publicly. Only you can access what you create.' },
+            { q: 'What image formats can I upload?', a: 'Common formats like JPG, PNG, and WebP. Drag and drop your photos or click to browse.' },
           ].map((faq, i) => (
             <FAQItem key={i} question={faq.q} answer={faq.a} />
           ))}
