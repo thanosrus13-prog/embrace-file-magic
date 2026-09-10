@@ -84,23 +84,18 @@ function App() {
     const imageFiles = Array.from(files).filter((f) => f.type.startsWith('image/'))
     if (!imageFiles.length) return
     setStoryError('')
+    const newImages = imageFiles.map((file) => ({
+      id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name,
+    }))
     setImages((prev) => {
-      const remainingSlots = Math.max(0, MAX_IMAGES - prev.length)
-      if (remainingSlots === 0) {
-        setStoryError(`Maximum ${MAX_IMAGES} images allowed. Remove one to add more.`)
-        return prev
+      const next = [...prev, ...newImages]
+      if (next.length > MAX_IMAGES) {
+        setStoryError(`Maximum ${MAX_IMAGES} upload images. Remove ${next.length - MAX_IMAGES} to continue.`)
       }
-      const toAdd = imageFiles.slice(0, remainingSlots)
-      if (toAdd.length < imageFiles.length) {
-        setStoryError(`Only ${remainingSlots} image${remainingSlots === 1 ? '' : 's'} added — maximum is ${MAX_IMAGES}.`)
-      }
-      const newImages = toAdd.map((file) => ({
-        id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        file,
-        url: URL.createObjectURL(file),
-        name: file.name,
-      }))
-      return [...prev, ...newImages]
+      return next
     })
   }
 
