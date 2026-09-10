@@ -59,6 +59,7 @@ export type Database = {
           provider_job_id: string | null
           status: string
           storage_path: string | null
+          storage_provider: string | null
           transcription_id: string | null
           updated_at: string
           user_id: string
@@ -75,6 +76,7 @@ export type Database = {
           provider_job_id?: string | null
           status?: string
           storage_path?: string | null
+          storage_provider?: string | null
           transcription_id?: string | null
           updated_at?: string
           user_id: string
@@ -91,6 +93,7 @@ export type Database = {
           provider_job_id?: string | null
           status?: string
           storage_path?: string | null
+          storage_provider?: string | null
           transcription_id?: string | null
           updated_at?: string
           user_id?: string
@@ -113,6 +116,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           storage_path: string | null
+          storage_provider: string | null
           text_content: string
           transcription_type: string
           user_id: string
@@ -123,6 +127,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           storage_path?: string | null
+          storage_provider?: string | null
           text_content: string
           transcription_type: string
           user_id: string
@@ -133,6 +138,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           storage_path?: string | null
+          storage_provider?: string | null
           text_content?: string
           transcription_type?: string
           user_id?: string

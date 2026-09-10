@@ -11,10 +11,10 @@ async function currentOrigin() {
 // Accepts an uploaded audio file URL, queues an asynchronous job and returns its id.
 export const createTranscriptionJob = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { audioUrl: string; storagePath?: string | null }) => {
+  .inputValidator((input: { audioUrl: string; storagePath?: string | null; storageProvider?: string | null }) => {
     const audioUrl = (input?.audioUrl ?? '').trim()
     if (!/^https:\/\//.test(audioUrl)) throw new Error('a https audio URL is required')
-    return { audioUrl, storagePath: input?.storagePath ?? null }
+    return { audioUrl, storagePath: input?.storagePath ?? null, storageProvider: input?.storageProvider ?? 'supabase' }
   })
   .handler(async ({ data, context }) => {
     const { assertRateLimit } = await import('./rate-limit.server')
@@ -27,6 +27,7 @@ export const createTranscriptionJob = createServerFn({ method: 'POST' })
       userId: context.userId,
       audioUrl: data.audioUrl,
       storagePath: data.storagePath,
+      storageProvider: data.storageProvider,
       origin: await currentOrigin(),
     })
   })

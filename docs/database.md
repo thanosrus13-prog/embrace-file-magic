@@ -10,7 +10,8 @@
 | `transcription_type` | text | `live` or `uploaded_file` |
 | `text_content` | text | transcript body |
 | `audio_url` | text | signed URL for the stored audio (nullable) |
-| `storage_path` | text | object path inside the `audio_files` bucket (nullable) |
+| `storage_path` | text | object path inside the `audio_files` bucket or S3 key (nullable) |
+| `storage_provider` | text | `supabase` or `s3` — where the audio file lives (default `supabase`) |
 | `created_at` | timestamptz | insert time |
 | `deleted_at` | timestamptz | soft-delete marker; `NULL` means active |
 
