@@ -129,14 +129,14 @@ export default function Auth() {
             className="h-12 w-auto"
             style={{ transform: `rotate(${scrollRotation}deg)` }}
           />
-          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'DM Sans, sans-serif', background: 'linear-gradient(90deg, #c1336b, #ec5144)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>VibePost</h1>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'DM Sans, sans-serif', background: 'linear-gradient(90deg, #c1336b, #ec5144)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>PostScript</h1>
         </button>
         <button
-          data-href="/transcribe"
+          data-href="/vibepost"
           className="ml-4 px-4 py-2 rounded-lg text-white text-sm font-medium hover-ltr transition-all duration-200 active:scale-95 active:opacity-80"
           style={{ backgroundColor: 'rgba(15, 15, 15, 0.35)' }}
         >
-          <span className="relative z-10">Transcribe</span>
+          <span className="relative z-10">VibePost</span>
         </button>
         <div className="flex-1"></div>
         {user ? (
@@ -168,11 +168,11 @@ export default function Auth() {
             <p className="text-white font-semibold mb-1">You&apos;re signed in</p>
             <p className="text-sm mb-5" style={{ color: '#c0bec6' }}>{user.email}</p>
             <button
-              onClick={() => navigate({ to: '/transcribe' })}
+              onClick={() => navigate({ to: '/' })}
               className="w-full px-8 py-3 rounded-xl text-lg font-bold text-white cursor-pointer hover-ltr transition-all duration-200 active:scale-[0.98] active:opacity-90"
               style={{ backgroundColor: 'black' }}
             >
-              <span className="relative z-10">Go to Transcribe</span>
+              <span className="relative z-10">Go to PostScript</span>
             </button>
           </div>
         )}

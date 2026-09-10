@@ -102,7 +102,7 @@ export default function ResetPassword() {
               backgroundClip: 'text',
             }}
           >
-            VibePost
+            PostScript
           </h1>
         </button>
         <div className="flex-1"></div>
