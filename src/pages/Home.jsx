@@ -90,13 +90,7 @@ function App() {
       url: URL.createObjectURL(file),
       name: file.name,
     }))
-    setImages((prev) => {
-      const next = [...prev, ...newImages]
-      if (next.length > MAX_IMAGES) {
-        setStoryError(`Maximum ${MAX_IMAGES} upload images. Remove ${next.length - MAX_IMAGES} to continue.`)
-      }
-      return next
-    })
+    setImages((prev) => [...prev, ...newImages])
   }
 
   const onDrop = useCallback((e) => {
