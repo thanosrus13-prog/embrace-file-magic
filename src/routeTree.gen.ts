@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TranscribeRouteImport } from './routes/transcribe'
+import { Route as ApiPostcardArtRouteImport } from './routes/api/postcard-art'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicTranscriptionWebhookRouteImport } from './routes/api/public/transcription-webhook'
 import { Route as ApiTranscriptionsIndexRouteImport } from './routes/api/transcriptions/index'
@@ -50,6 +51,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const TranscribeRoute = TranscribeRouteImport.update({
   id: '/transcribe',
   path: '/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPostcardArtRoute = ApiPostcardArtRouteImport.update({
+  id: '/api/postcard-art',
+  path: '/api/postcard-art',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/postcard-art': typeof ApiPostcardArtRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/postcard-art': typeof ApiPostcardArtRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/transcribe': typeof TranscribeRoute
+  '/api/postcard-art': typeof ApiPostcardArtRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
   '/api/public/transcription-webhook': typeof ApiPublicTranscriptionWebhookRoute
   '/api/transcriptions/$id': typeof ApiTranscriptionsIdRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/transcribe'
+    | '/api/postcard-art'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/transcribe'
+    | '/api/postcard-art'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/transcribe'
+    | '/api/postcard-art'
     | '/api/public/openapi.json'
     | '/api/public/transcription-webhook'
     | '/api/transcriptions/$id'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TranscribeRoute: typeof TranscribeRoute
+  ApiPostcardArtRoute: typeof ApiPostcardArtRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
   ApiPublicTranscriptionWebhookRoute: typeof ApiPublicTranscriptionWebhookRoute
   ApiTranscriptionsIdRoute: typeof ApiTranscriptionsIdRoute
@@ -231,6 +244,13 @@ declare module '@tanstack/react-router' {
       path: '/transcribe'
       fullPath: '/transcribe'
       preLoaderRoute: typeof TranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/postcard-art': {
+      id: '/api/postcard-art'
+      path: '/api/postcard-art'
+      fullPath: '/api/postcard-art'
+      preLoaderRoute: typeof ApiPostcardArtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/openapi.json': {
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TranscribeRoute: TranscribeRoute,
+  ApiPostcardArtRoute: ApiPostcardArtRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
   ApiPublicTranscriptionWebhookRoute: ApiPublicTranscriptionWebhookRoute,
   ApiTranscriptionsIdRoute: ApiTranscriptionsIdRoute,
