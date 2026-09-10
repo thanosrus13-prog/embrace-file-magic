@@ -3,12 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 type Body = { images?: string[]; narrative?: string }
 
 const STYLE =
-  'Create ONE single illustrated animated-style artwork (modern 2D animation / Pixar-meets-travel-poster look): ' +
-  'clean bold outlines, painterly cel shading, warm cinematic lighting, rich saturated colours, ' +
-  'no text, no words, no letters, no collage frames, no borders. ' +
-  'Landscape 3:2 composition suitable for the front of a postcard. ' +
-  'The artwork must be a faithful animated re-imagining of the attached photos: keep the same places, ' +
-  'subjects, clothing, weather, time of day, objects and mood that are visible in them. Invent nothing new.'
+  'Repaint these photos as ONE animated-film style illustration (bold outlines, warm light, rich colours). ' +
+  'Take something from each photo. No text, no borders, no collage. Landscape postcard image.'
 
 export const Route = createFileRoute('/api/postcard-art')({
   server: {
@@ -41,7 +37,7 @@ export const Route = createFileRoute('/api/postcard-art')({
           method: 'POST',
           headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'google/gemini-3-pro-image',
+            model: 'google/gemini-3.1-flash-image',
             messages: [{ role: 'user', content }],
             modalities: ['image', 'text'],
           }),
