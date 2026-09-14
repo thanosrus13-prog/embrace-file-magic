@@ -7,7 +7,7 @@ const S3_BUCKET_PREFIX = 'postscript-bucket-2026-094275177807-us-east-1-an'
 
 /**
  * Returns a pre-signed S3 upload URL. The client PUTs the file directly to S3.
- * Files 0–25 MB are routed to S3; larger files go to Supabase Storage.
+ * Files larger than 25 MB are routed to S3; smaller files go to Supabase Storage.
  */
 export const getS3UploadUrl = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
