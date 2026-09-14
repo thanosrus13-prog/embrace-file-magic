@@ -52,7 +52,7 @@ async function uploadToS3(file) {
   }
 }
 
-// Uploads to Supabase Storage (for files larger than 25 MB).
+// Uploads to Supabase Storage (default path, and fallback when S3 fails).
 async function uploadToSupabase(file, userId) {
   const ext = (file.name?.split('.').pop() || 'dat').toLowerCase()
   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
