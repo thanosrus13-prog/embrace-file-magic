@@ -18,14 +18,33 @@ export const getS3UploadUrl = createServerFn({ method: 'POST' })
     }).parse(input)
   })
   .handler(async ({ data, context }) => {
+    // Build a user-scoped object key.
+    const ext = (data.fileName.split('.').pop() || 'dat').toLowerCase()
+    const objectKey = `${context.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+
+    // Preferred path: direct AWS credentials (portable across Lovable, Vercel, AWS).
+    const { getAwsS3Config, presignS3Url } = await import('./s3-sign.server')
+    const awsConfig = getAwsS3Config()
+    if (awsConfig) {
+      try {
+        const uploadUrl = await presignS3Url({
+          config: awsConfig,
+          method: 'PUT',
+          objectKey,
+          expiresIn: 900,
+        })
+        return { uploadUrl, objectKey, error: null }
+      } catch (err) {
+        console.error('Direct S3 presign (upload) failed', err)
+      }
+    }
+
+    // Fallback: Lovable connector gateway.
     const LOVABLE_API_KEY = process.env['LOVABLE_API_KEY']
     const AWS_S3_API_KEY = process.env['AWS_S3_API_KEY']
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured')
     if (!AWS_S3_API_KEY) throw new Error('AWS_S3_API_KEY is not configured')
 
-    // Build a user-scoped object key.
-    const ext = (data.fileName.split('.').pop() || 'dat').toLowerCase()
-    const objectKey = `${context.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 
     const res = await fetch(
       `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
