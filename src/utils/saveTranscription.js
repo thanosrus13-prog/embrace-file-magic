@@ -2,15 +2,16 @@ import { supabase } from '@/integrations/supabase/client'
 import { getS3UploadUrl, getS3DownloadUrl } from '@/lib/s3-storage.functions'
 
 const BUCKET = 'audio_files'
-const S3_SIZE_LIMIT = 25 * 1024 * 1024 // 25 MB — files at or below this go to S3.
+const S3_SIZE_THRESHOLD = 25 * 1024 * 1024 // Files above this go to AWS S3.
 
 // Uploads an audio file for the signed-in user and returns its URL.
-// Files ≤ 25 MB are stored in AWS S3; larger files go to Supabase Storage.
+// Files ≤ 25 MB are stored in Supabase Storage; larger files go to AWS S3
+// (with Supabase Storage as a fallback if the S3 upload fails).
 export async function uploadAudioFile(file) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { url: null, error: 'not signed in' }
 
-  if (file.size <= S3_SIZE_LIMIT) {
+  if (file.size > S3_SIZE_THRESHOLD) {
     const s3 = await uploadToS3(file)
     if (s3.url) return s3
     // S3 unavailable (e.g. bucket CORS not configured yet) — fall back to Supabase.
@@ -19,6 +20,7 @@ export async function uploadAudioFile(file) {
   }
   return uploadToSupabase(file, user.id)
 }
+
 
 // Uploads to AWS S3 via a pre-signed URL from the gateway.
 async function uploadToS3(file) {
@@ -50,7 +52,7 @@ async function uploadToS3(file) {
   }
 }
 
-// Uploads to Supabase Storage (for files larger than 25 MB).
+// Uploads to Supabase Storage (default path, and fallback when S3 fails).
 async function uploadToSupabase(file, userId) {
   const ext = (file.name?.split('.').pop() || 'dat').toLowerCase()
   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
