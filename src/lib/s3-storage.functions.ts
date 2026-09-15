@@ -80,6 +80,23 @@ export const getS3DownloadUrl = createServerFn({ method: 'POST' })
     }).parse(input)
   })
   .handler(async ({ data }) => {
+    // Preferred path: direct AWS credentials (portable across hosts).
+    const { getAwsS3Config, presignS3Url } = await import('./s3-sign.server')
+    const awsConfig = getAwsS3Config()
+    if (awsConfig) {
+      try {
+        const downloadUrl = await presignS3Url({
+          config: awsConfig,
+          method: 'GET',
+          objectKey: data.objectKey,
+          expiresIn: 3600,
+        })
+        return { downloadUrl, error: null }
+      } catch (err) {
+        console.error('Direct S3 presign (download) failed', err)
+      }
+    }
+
     const LOVABLE_API_KEY = process.env['LOVABLE_API_KEY']
     const AWS_S3_API_KEY = process.env['AWS_S3_API_KEY']
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured')
