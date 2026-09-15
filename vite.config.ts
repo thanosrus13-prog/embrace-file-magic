@@ -17,7 +17,7 @@ const DEPLOY_PRESETS: Record<string, string> = {
   node: "node-server",
   cloudflare: "cloudflare-module",
 };
-const preset = DEPLOY_PRESETS[(process.env.DEPLOY_TARGET || "").toLowerCase()] ?? "cloudflare-module";
+const preset = DEPLOY_PRESETS[(process.env["DEPLOY_TARGET"] || "").toLowerCase()] ?? "cloudflare-module";
 
 export default defineConfig({
   nitro: { preset },
