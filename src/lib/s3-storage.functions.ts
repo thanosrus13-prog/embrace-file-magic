@@ -141,6 +141,14 @@ export const deleteS3Object = createServerFn({ method: 'POST' })
       return { error: 'Forbidden: object does not belong to caller' }
     }
 
+    // Preferred path: direct AWS credentials (portable across hosts).
+    const { getAwsS3Config, deleteS3ObjectDirect } = await import('./s3-sign.server')
+    const awsConfig = getAwsS3Config()
+    if (awsConfig) {
+      const result = await deleteS3ObjectDirect(awsConfig, data.objectKey)
+      if (!result.error) return result
+    }
+
     const LOVABLE_API_KEY = process.env['LOVABLE_API_KEY']
     const AWS_S3_API_KEY = process.env['AWS_S3_API_KEY']
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured')
