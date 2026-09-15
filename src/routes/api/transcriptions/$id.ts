@@ -86,8 +86,12 @@ export const Route = createFileRoute('/api/transcriptions/$id')({
         const storageProvider = data[0]?.storage_provider ?? 'supabase'
         if (storagePath) {
           if (storageProvider === 's3') {
-            // Delete from AWS S3 via the gateway.
-            const LOVABLE_API_KEY = process.env['LOVABLE_API_KEY']
+            // Preferred: direct AWS credentials (works on Lovable, Vercel and AWS).
+            const { getAwsS3Config, deleteS3ObjectDirect } = await import('@/lib/s3-sign.server')
+            const awsConfig = getAwsS3Config()
+            const direct = awsConfig ? await deleteS3ObjectDirect(awsConfig, storagePath) : { error: 'no-direct-creds' }
+            // Fallback: Lovable connector gateway.
+            const LOVABLE_API_KEY = direct.error ? process.env['LOVABLE_API_KEY'] : undefined
             const AWS_S3_API_KEY = process.env['AWS_S3_API_KEY']
             if (LOVABLE_API_KEY && AWS_S3_API_KEY) {
               const delRes = await fetch(
